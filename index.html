@@ -114,110 +114,88 @@
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-      import { getFirestore, collection, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  // === Firebase (no Auth) - Guestbook ===
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      // Global variables provided by the Canvas environment
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-      const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+  // TODO: Dán cấu hình thật từ Firebase Console (Project settings > General > Your apps)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBA4RTN8dLxXI2SPP6zTcUIWumb0mqYUgU",
+    authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+    projectId: "thiep-cuoi-c3d08",
+    storageBucket: "thiep-cuoi-c3d08.firebasestorage.app",
+    messagingSenderId: "221614290",
+    appId: "1:221614290:web:a3db7a997326b19b3a9d0b"
+  };
 
-      if (Object.keys(firebaseConfig).length === 0) {
-        console.error("Firebase config is not provided.");
-        document.getElementById('authStatus').textContent = "Lỗi: Không thể kết nối tới Firebase. Vui lòng kiểm tra lại cấu hình.";
-        document.getElementById('submitBtn').disabled = true;
-      } else {
-        // Set Firebase log level for debugging
-        setLogLevel('debug');
+  const statusEl = document.getElementById('authStatus');
+  const submitBtn = document.getElementById('submitBtn');
+  const loading = document.getElementById('loading');
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let currentUserId = null;
-        let authReady = false;
+  function showMessage(message) {
+    const messageBox = document.getElementById('messageBox');
+    const messageText = document.getElementById('messageText');
+    messageText.textContent = message;
+    messageBox.style.display = 'flex';
+  }
+  document.getElementById('closeMessageBtn').addEventListener('click', () => {
+    document.getElementById('messageBox').style.display = 'none';
+  });
 
-        AOS.init({
-          offset: 200,
-          duration: 600,
-          easing: 'ease-in-sine',
-          delay: 100,
-          once: true
-        });
+  // Kiểm tra cấu hình
+  if (!firebaseConfig || !firebaseConfig.projectId) {
+    console.error("Firebase config is missing. Vui lòng dán firebaseConfig thật.");
+    statusEl.textContent = "Chưa cấu hình Firebase. Hãy dán cấu hình vào file index.";
+    submitBtn.disabled = true;
+  } else {
+    // Khởi tạo
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    statusEl.textContent = "Kết nối Firebase OK";
 
-        // Show a custom message box instead of alert()
-        const messageBox = document.getElementById('messageBox');
-        const messageText = document.getElementById('messageText');
-        const closeMessageBtn = document.getElementById('closeMessageBtn');
+    // AOS (hiệu ứng cuộn)
+    if (typeof AOS !== 'undefined') {
+      AOS.init({
+        offset: 200,
+        duration: 600,
+        easing: 'ease-in-sine',
+        delay: 100,
+        once: true
+      });
+    }
 
-        function showMessage(message) {
-          messageText.textContent = message;
-          messageBox.style.display = 'flex';
-        }
+    // Bắt submit form
+    const form = document.getElementById('guestbookForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('userName').value.trim();
+      const message = document.getElementById('message').value.trim();
 
-        closeMessageBtn.addEventListener('click', () => {
-          messageBox.style.display = 'none';
-        });
-
-        // Use onAuthStateChanged to ensure authentication is ready
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            currentUserId = user.uid;
-            authReady = true;
-            document.getElementById('authStatus').textContent = `User ID của bạn: ${currentUserId}`;
-            console.log("User signed in with ID:", currentUserId);
-          } else {
-            console.log("No user signed in yet, signing in anonymously...");
-            try {
-              if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-              } else {
-                await signInAnonymously(auth);
-              }
-            } catch (error) {
-              console.error("Authentication error:", error);
-              document.getElementById('authStatus').textContent = "Lỗi xác thực. Vui lòng thử lại.";
-              document.getElementById('submitBtn').disabled = true;
-            }
-          }
-        });
-
-        const form = document.getElementById('guestbookForm');
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-
-          if (!authReady) {
-            showMessage("Đang chờ xác thực người dùng. Vui lòng đợi một lát rồi thử lại.");
-            return;
-          }
-
-          const loading = document.getElementById('loading');
-          loading.style.display = 'block';
-          document.getElementById('submitBtn').disabled = true;
-
-          const userName = document.getElementById('userName').value;
-          const message = document.getElementById('message').value;
-
-          try {
-            const docRef = await addDoc(collection(db, `artifacts/${appId}/public/data/guestbook`), {
-              userId: currentUserId,
-              name: userName,
-              message: message,
-              timestamp: serverTimestamp(),
-            });
-
-            console.log("Document written with ID: ", docRef.id);
-            showMessage("Gửi lời chúc thành công!");
-            form.reset();
-          } catch (error) {
-            console.error("Error adding document: ", error);
-            showMessage("Lỗi khi gửi lời chúc. Vui lòng thử lại.");
-          } finally {
-            loading.style.display = 'none';
-            document.getElementById('submitBtn').disabled = false;
-          }
-        });
+      if (!name || !message) {
+        showMessage("Vui lòng nhập đầy đủ Tên và Lời chúc.");
+        return;
       }
-    </script>
+
+      submitBtn.disabled = true;
+      loading.style.display = 'inline-block';
+      try {
+        const docRef = await addDoc(collection(db, 'guestbook'), {
+          name,
+          message,
+          createdAt: serverTimestamp()
+        });
+        console.log('Document ID:', docRef.id);
+        showMessage("Gửi lời chúc thành công!");
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        showMessage("Có lỗi xảy ra, vui lòng thử lại.");
+      } finally {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script>
   </body>
 </html>
