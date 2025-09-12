@@ -1,258 +1,314 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hoàn&Huyền</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hoàn&Huyền</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 
-    <!-- Firebase (v11 modular) - KHÔNG dùng Auth để tránh lỗi 400 admin-restricted-operation -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { 
-        getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp, 
-        doc, updateDoc 
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  <!-- Firebase (v11 modular). 
+       - Public page: KHÔNG dùng Auth.
+       - Admin page (?admin=true): đăng nhập Anonymous để được phép update (hide/unhide). -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp,
+      doc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      /* TODO: Thay cấu hình dưới bằng cấu hình thật của bạn trong Firebase Console > Project settings > General */
-      const firebaseConfig = {
-        apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
-        authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
-        projectId: "thiep-cuoi-c3d08",
-        storageBucket: "thiep-cuoi-c3d08.appspot.com",
-        messagingSenderId: "221614290",
-        appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
-      };
+    // ---- CẤU HÌNH FIREBASE (thay bằng của bạn nếu khác) ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
+      authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+      projectId: "thiep-cuoi-c3d08",
+      storageBucket: "thiep-cuoi-c3d08.appspot.com",
+      messagingSenderId: "221614290",
+      appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
+    };
 
-      // Khởi tạo
-      const app = initializeApp(firebaseConfig);
-      const db  = getFirestore(app);
+    // ---- KHỞI TẠO ----
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
 
-      // Hiển thị tên khách mời (param ?to=...)
-      const urlParams = new URLSearchParams(window.location.search);
-      const guestName = urlParams.get('to');
-      document.addEventListener('DOMContentLoaded', () => {
-        if (guestName) {
-          const el = document.getElementById('guest-name-display');
-          if (el) el.textContent = decodeURIComponent(guestName);
-        }
-        // Không dùng Auth => user-id là N/A
-        const uidEl = document.getElementById('user-id');
-        if (uidEl) uidEl.textContent = "N/A";
-        // Load lời chúc
-        loadGuestbook();
-      });
+    // ---- PHÂN CHẾ ĐỘ ----
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get("admin") === "true";
 
-      // Gửi lời chúc
-      window.submitGuestbook = async () => {
-        const nameInput    = document.getElementById('guest-name');
-        const messageInput = document.getElementById('guest-message');
-        const formStatus   = document.getElementById('form-status');
-        const name = (nameInput?.value || "").trim();
-        const message = (messageInput?.value || "").trim();
-
-        if (!name || !message) {
-          formStatus.textContent = 'Vui lòng điền tên và lời chúc.';
-          formStatus.className = 'text-red-500 mt-2';
-          return;
-        }
-        try {
-          await addDoc(collection(db, 'guestbook'), {
-            name, 
-            message, 
-            createdAt: serverTimestamp(), 
-            approved: true
-          });
-          if (nameInput) nameInput.value = '';
-          if (messageInput) messageInput.value = '';
-          formStatus.textContent = 'Lời chúc của bạn đã được gửi thành công!';
-          formStatus.className = 'text-green-500 mt-2';
-        } catch (e) {
-          console.error('Error adding document:', e);
-          formStatus.textContent = 'Có lỗi xảy ra, vui lòng thử lại.';
-          formStatus.className = 'text-red-500 mt-2';
-        }
-      };
-
-      // Tải danh sách lời chúc đã duyệt
-      function loadGuestbook() {
-        const q = query(
-          collection(db, 'guestbook'),
-          where('approved', '==', true),
-          orderBy('createdAt', 'desc')
-        );
-        onSnapshot(q, (snap) => {
-          const list = document.getElementById('guestbook-list');
-          if (!list) return;
-          list.innerHTML = '';
-          snap.forEach((docSnap) => {
-            const data = docSnap.data();
-            const li = document.createElement('li');
-            li.className = 'bg-stone-50 p-4 rounded-xl shadow-sm mb-4 border border-stone-200';
-            const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('vi-VN') : '';
-            li.innerHTML = `
-              <p class="font-bold text-lg text-rose-500">${data.name ?? ''}</p>
-              <p class="text-stone-700 mt-2 italic">${data.message ?? ''}</p>
-              <p class="text-xs text-stone-500 mt-2 text-right">Gửi lúc: ${dateStr}</p>
-            `;
-            list.appendChild(li);
-          });
-        });
+    // Tên khách mời (?to=...)
+    const guestName = urlParams.get("to");
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (guestName) {
+        const el = document.getElementById("guest-name-display");
+        if (el) el.textContent = decodeURIComponent(guestName);
       }
 
-      // (Tuỳ chọn) Hàm duyệt/ẩn lời chúc nếu sau này bạn bật rule cho phép update
-      window.approveMessage = async (docId) => {
-        try {
-          await updateDoc(doc(db, 'guestbook', docId), { approved: true });
-        } catch (e) { console.error('approveMessage error:', e); }
-      };
-      window.hideMessage = async (docId) => {
-        try {
-          await updateDoc(doc(db, 'guestbook', docId), { approved: false });
-        } catch (e) { console.error('hideMessage error:', e); }
-      };
-    </script>
+      // Public: không auth
+      let authUidText = "N/A";
 
-    <style>
-        body {
-            font-family: 'Quicksand', sans-serif;
-            background-color: #f8f0e5;
-            color: #4b5563; /* text-gray-600 */
-            scroll-behavior: smooth;
+      if (isAdmin) {
+        // Admin: đăng nhập Anonymous để được quyền update (theo Rules)
+        const { getAuth, signInAnonymously, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+        const auth = getAuth(app);
+        try {
+          await signInAnonymously(auth);
+        } catch (e) {
+          console.error("Anonymous sign-in error:", e);
         }
-        .playfair-font {
-            font-family: 'Playfair Display', serif;
-        }
-        .bg-cover-image {
-            background-image: url('https://placehold.co/1200x800/e0c2a5/fff?text=Ảnh+cưới+đẹp');
-            background-size: cover;
-            background-position: center;
-        }
-    </style>
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            authUidText = user.uid;
+            const uidEl = document.getElementById("user-id");
+            if (uidEl) uidEl.textContent = authUidText;
+          }
+        });
+
+        // Hiện admin panel
+        document.getElementById("admin-panel").classList.remove("hidden");
+        loadAdminList(); // load danh sách đầy đủ để thao tác ẩn/hiện
+      }
+
+      // Set user id text for public too
+      const uidEl = document.getElementById("user-id");
+      if (uidEl && !isAdmin) uidEl.textContent = authUidText;
+
+      // Load trang public
+      loadGuestbook();
+    });
+
+    // ---- GỬI LỜI CHÚC (public) ----
+    window.submitGuestbook = async () => {
+      const nameInput    = document.getElementById("guest-name");
+      const messageInput = document.getElementById("guest-message");
+      const formStatus   = document.getElementById("form-status");
+
+      const name    = (nameInput?.value || "").trim();
+      const message = (messageInput?.value || "").trim();
+
+      if (!name || !message) {
+        formStatus.textContent = "Vui lòng điền tên và lời chúc.";
+        formStatus.className = "text-red-500 mt-2";
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "guestbook"), {
+          name,
+          message,
+          createdAt: serverTimestamp(),
+          hidden: false  // mặc định HIỂN THỊ
+        });
+        if (nameInput) nameInput.value = "";
+        if (messageInput) messageInput.value = "";
+        formStatus.textContent = "Lời chúc của bạn đã được gửi thành công!";
+        formStatus.className = "text-green-500 mt-2";
+      } catch (e) {
+        console.error("Error adding document:", e);
+        formStatus.textContent = "Có lỗi xảy ra, vui lòng thử lại.";
+        formStatus.className = "text-red-500 mt-2";
+      }
+    };
+
+    // ---- HIỂN THỊ CÔNG KHAI: show all trừ những cái bị ẩn ----
+    function loadGuestbook() {
+      const q = query(collection(db, "guestbook"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snap) => {
+        const list = document.getElementById("guestbook-list");
+        if (!list) return;
+        list.innerHTML = "";
+        snap.forEach((docSnap) => {
+          const data = docSnap.data();
+          // Nếu hidden === true thì KHÔNG hiển thị công khai
+          if (data.hidden === true) return;
+          const li = document.createElement("li");
+          li.className = "bg-stone-50 p-4 rounded-xl shadow-sm mb-4 border border-stone-200";
+          const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString("vi-VN") : "";
+          li.innerHTML = `
+            <p class="font-bold text-lg text-rose-500">${data.name ?? ""}</p>
+            <p class="text-stone-700 mt-2 italic">${data.message ?? ""}</p>
+            <p class="text-xs text-stone-500 mt-2 text-right">Gửi lúc: ${dateStr}</p>
+          `;
+          list.appendChild(li);
+        });
+      }, (err) => {
+        console.error("Guestbook snapshot error:", err);
+        const list = document.getElementById("guestbook-list");
+        if (list) list.innerHTML = `<li class="text-red-500">Không đọc được dữ liệu.</li>`;
+      });
+    }
+
+    // ---- ADMIN: danh sách đầy đủ + Ẩn/Hiện ----
+    function loadAdminList() {
+      const q = query(collection(db, "guestbook"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snap) => {
+        const list = document.getElementById("pending-list");
+        if (!list) return;
+        list.innerHTML = "";
+        snap.forEach((docSnap) => {
+          const data = docSnap.data();
+          const id = docSnap.id;
+          const li = document.createElement("li");
+          li.className = "bg-white p-4 rounded-xl shadow mb-4 border";
+          const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString("vi-VN") : "";
+          const isHidden = data.hidden === true;
+          li.innerHTML = `
+            <div class="flex justify-between items-start gap-4">
+              <div>
+                <p class="font-semibold ${isHidden ? 'line-through text-stone-400' : 'text-stone-800'}">${data.name ?? ""}</p>
+                <p class="${isHidden ? 'line-through text-stone-400' : 'text-stone-700'} mt-1">${data.message ?? ""}</p>
+                <p class="text-xs text-stone-500 mt-2">Gửi lúc: ${dateStr}</p>
+              </div>
+              <div class="flex gap-2">
+                <button class="px-3 py-1 rounded-md border ${isHidden ? 'bg-green-50 border-green-300 text-green-700' : 'bg-rose-50 border-rose-300 text-rose-700'}"
+                        onclick="toggleVisibility('${id}', ${isHidden ? 'false' : 'true'})">
+                  ${isHidden ? 'Hiện' : 'Ẩn'}
+                </button>
+              </div>
+            </div>
+          `;
+          list.appendChild(li);
+        });
+      });
+    }
+
+    // ---- Toggle ẩn/hiện ----
+    window.toggleVisibility = async (docId, hide) => {
+      try {
+        await updateDoc(doc(db, "guestbook", docId), { hidden: !!hide });
+      } catch (e) {
+        console.error("toggleVisibility error:", e);
+        alert("Không thể cập nhật. Có thể Rules chưa cho phép UPDATE.");
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f8f0e5;
+      color: #4b5563;
+      scroll-behavior: smooth;
+    }
+    .playfair-font { font-family: 'Playfair Display', serif; }
+    .bg-cover-image {
+      background-image: url('https://placehold.co/1200x800/e0c2a5/fff?text=Ảnh+cưới+đẹp');
+      background-size: cover;
+      background-position: center;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- Trang bìa -->
-    <header id="home" class="h-screen bg-cover-image flex flex-col justify-center items-center text-center text-white p-4 relative">
-        <div class="absolute inset-0 bg-black opacity-40"></div>
-        <div class="relative z-10">
-            <h1 class="playfair-font text-4xl sm:text-6xl md:text-8xl font-bold mb-4 animate-fadeIn">Văn Hoàn & Ngọc Huyền</h1>
-            <p class="quicksand-font text-lg sm:text-xl md:text-2xl font-semibold mb-6 animate-fadeInDelay">Trân trọng kính mời <span id="guest-name-display" class="font-bold"></span></p>
-            <p class="quicksand-font text-lg sm:text-xl md:text-2xl animate-fadeInDelay">Thứ Bảy, ngày 10 tháng 10 năm 2025</p>
-        </div>
-        <a href="#details" class="absolute bottom-10 animate-bounce cursor-pointer">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-        </a>
-    </header>
+  <header id="home" class="h-screen bg-cover-image flex flex-col justify-center items-center text-center text-white p-4 relative">
+    <div class="absolute inset-0 bg-black opacity-40"></div>
+    <div class="relative z-10">
+      <h1 class="playfair-font text-4xl sm:text-6xl md:text-8xl font-bold mb-4">Văn Hoàn & Ngọc Huyền</h1>
+      <p class="quicksand-font text-lg sm:text-xl md:text-2xl font-semibold mb-6">Trân trọng kính mời <span id="guest-name-display" class="font-bold"></span></p>
+      <p class="quicksand-font text-lg sm:text-xl md:text-2xl">Thứ Bảy, ngày 10 tháng 10 năm 2025</p>
+    </div>
+    <a href="#details" class="absolute bottom-10 animate-bounce cursor-pointer">
+      <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+    </a>
+  </header>
 
-    <!-- Chi tiết sự kiện -->
-    <section id="details" class="py-16 px-4 bg-white text-center">
-        <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Chi Tiết Sự Kiện</h2>
-        <div class="max-w-3xl mx-auto space-y-8 md:space-y-0 md:flex md:gap-8">
-            <div class="flex-1 bg-stone-50 p-6 rounded-3xl shadow-lg border border-stone-200">
-                <h3 class="playfair-font text-2xl font-semibold text-stone-700 mb-4">Lễ Thành Hôn</h3>
-                <p class="quicksand-font text-lg font-semibold mb-2 text-rose-500">Tại nhà trai</p>
-                <p class="mb-1">⏰ Thời gian: <span class="font-semibold">09:00</span></p>
-                <p class="mb-1">📅 Ngày: <span class="font-semibold">Thứ Bảy, ngày 10/10/2025</span></p>
-                <p>📍 Địa điểm: <a href="https://maps.app.goo.gl/placeholder1" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà riêng chú rể</a></p>
-            </div>
-            <div class="flex-1 bg-stone-50 p-6 rounded-3xl shadow-lg border border-stone-200">
-                <h3 class="playfair-font text-2xl font-semibold text-stone-700 mb-4">Tiệc Cưới</h3>
-                <p class="quicksand-font text-lg font-semibold mb-2 text-rose-500">Tại nhà hàng</p>
-                <p class="mb-1">⏰ Thời gian: <span class="font-semibold">18:00</span></p>
-                <p class="mb-1">📅 Ngày: <span class="font-semibold">Thứ Bảy, ngày 10/10/2025</span></p>
-                <p>📍 Địa điểm: <a href="https://maps.app.goo.gl/placeholder2" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà Hàng ABC, 123 Đường XYZ, TP. HCM</a></p>
-            </div>
-        </div>
-    </section>
+  <section id="details" class="py-16 px-4 bg-white text-center">
+    <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Chi Tiết Sự Kiện</h2>
+    <div class="max-w-3xl mx-auto space-y-8 md:space-y-0 md:flex md:gap-8">
+      <div class="flex-1 bg-stone-50 p-6 rounded-3xl shadow-lg border border-stone-200">
+        <h3 class="playfair-font text-2xl font-semibold text-stone-700 mb-4">Lễ Thành Hôn</h3>
+        <p class="quicksand-font text-lg font-semibold mb-2 text-rose-500">Tại nhà trai</p>
+        <p class="mb-1">⏰ Thời gian: <span class="font-semibold">09:00</span></p>
+        <p class="mb-1">📅 Ngày: <span class="font-semibold">Thứ Bảy, ngày 10/10/2025</span></p>
+        <p>📍 Địa điểm: <a href="https://maps.app.goo.gl/placeholder1" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà riêng chú rể</a></p>
+      </div>
+      <div class="flex-1 bg-stone-50 p-6 rounded-3xl shadow-lg border border-stone-200">
+        <h3 class="playfair-font text-2xl font-semibold text-stone-700 mb-4">Tiệc Cưới</h3>
+        <p class="quicksand-font text-lg font-semibold mb-2 text-rose-500">Tại nhà hàng</p>
+        <p class="mb-1">⏰ Thời gian: <span class="font-semibold">18:00</span></p>
+        <p class="mb-1">📅 Ngày: <span class="font-semibold">Thứ Bảy, ngày 10/10/2025</span></p>
+        <p>📍 Địa điểm: <a href="https://maps.app.goo.gl/placeholder2" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà Hàng ABC, 123 Đường XYZ, TP. HCM</a></p>
+      </div>
+    </div>
+  </section>
 
-    <!-- Câu chuyện tình yêu -->
-    <section id="story" class="py-16 px-4 bg-rose-50 text-center">
-        <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Câu Chuyện Của Chúng Tôi</h2>
-        <div class="max-w-4xl mx-auto">
-            <div class="md:flex md:items-center md:gap-8 mb-8">
-                <div class="md:w-1/2 mb-4 md:mb-0">
-                    <img src="https://placehold.co/600x400/fff3d6/e0c2a5?text=Ảnh+kỷ+niệm+1" alt="Our story photo 1" class="rounded-3xl shadow-lg w-full">
-                </div>
-                <div class="md:w-1/2 text-left">
-                    <h3 class="playfair-font text-xl font-semibold text-stone-700 mb-2">Lần đầu gặp gỡ...</h3>
-                    <p class="text-sm text-stone-600 leading-relaxed">Câu chuyện tình yêu của chúng tôi bắt đầu từ một buổi gặp gỡ tình cờ. Ánh mắt đầu tiên, nụ cười đầu tiên... đều là những khoảnh khắc đáng nhớ, là điểm khởi đầu cho một hành trình dài đầy ắp kỷ niệm.</p>
-                </div>
-            </div>
-            <div class="md:flex md:flex-row-reverse md:items-center md:gap-8">
-                <div class="md:w-1/2 mb-4 md:mb-0">
-                    <img src="https://placehold.co/600x400/fff3d6/e0c2a5?text=Ảnh+kỷ+niệm+2" alt="Our story photo 2" class="rounded-3xl shadow-lg w-full">
-                </div>
-                <div class="md:w-1/2 text-left">
-                    <h3 class="playfair-font text-xl font-semibold text-stone-700 mb-2">Hành trình yêu thương...</h3>
-                    <p class="text-sm text-stone-600 leading-relaxed">Chúng tôi đã cùng nhau vượt qua bao thử thách, chia sẻ niềm vui và cả những nỗi buồn. Mỗi khoảnh khắc đều trở thành một phần của câu chuyện, một viên gạch xây nên ngôi nhà hạnh phúc của chúng tôi.</p>
-                </div>
-            </div>
+  <section id="story" class="py-16 px-4 bg-rose-50 text-center">
+    <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Câu Chuyện Của Chúng Tôi</h2>
+    <div class="max-w-4xl mx-auto">
+      <div class="md:flex md:items-center md:gap-8 mb-8">
+        <div class="md:w-1/2 mb-4 md:mb-0">
+          <img src="https://placehold.co/600x400/fff3d6/e0c2a5?text=Ảnh+kỷ+niệm+1" alt="Our story photo 1" class="rounded-3xl shadow-lg w-full">
         </div>
-    </section>
-
-    <!-- Bộ sưu tập ảnh -->
-    <section id="gallery" class="py-16 px-4 bg-white text-center">
-        <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Album Ảnh Cưới</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+1" alt="Gallery photo 1" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+2" alt="Gallery photo 2" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+3" alt="Gallery photo 3" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+4" alt="Gallery photo 4" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+5" alt="Gallery photo 5" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+6" alt="Gallery photo 6" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+7" alt="Gallery photo 7" class="w-full h-auto rounded-xl shadow-md">
-            <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+8" alt="Gallery photo 8" class="w-full h-auto rounded-xl shadow-md">
+        <div class="md:w-1/2 text-left">
+          <h3 class="playfair-font text-xl font-semibold text-stone-700 mb-2">Lần đầu gặp gỡ...</h3>
+          <p class="text-sm text-stone-600 leading-relaxed">Câu chuyện tình yêu của chúng tôi bắt đầu từ một buổi gặp gỡ tình cờ...</p>
         </div>
-    </section>
-
-    <!-- Sổ lưu bút -->
-    <section id="guestbook" class="py-16 px-4 bg-rose-50 text-center">
-        <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Sổ Lưu Bút & Lời Chúc</h2>
-        <div class="max-w-2xl mx-auto">
-            <!-- Form gửi lời chúc -->
-            <div class="bg-white p-6 rounded-3xl shadow-lg border border-stone-200 mb-8">
-                <form onsubmit="event.preventDefault(); submitGuestbook();">
-                    <div class="mb-4">
-                        <label for="guest-name" class="block text-sm font-medium text-gray-700 text-left mb-1">Tên của bạn:</label>
-                        <input type="text" id="guest-name" class="block w-full rounded-md border-gray-300 shadow-sm p-2 border" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="guest-message" class="block text-sm font-medium text-gray-700 text-left mb-1">Lời chúc:</label>
-                        <textarea id="guest-message" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm p-2 border" required></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-rose-500 text-white rounded-md py-2 font-semibold hover:bg-rose-600 transition-colors">Gửi Lời Chúc</button>
-                    <p id="form-status" class="text-sm mt-2"></p>
-                </form>
-            </div>
-            
-            <!-- Danh sách lời chúc -->
-            <ul id="guestbook-list" class="text-left mt-8">
-                <!-- Lời chúc sẽ được load tại đây -->
-            </ul>
+      </div>
+      <div class="md:flex md:flex-row-reverse md:items-center md:gap-8">
+        <div class="md:w-1/2 mb-4 md:mb-0">
+          <img src="https://placehold.co/600x400/fff3d6/e0c2a5?text=Ảnh+kỷ+niệm+2" alt="Our story photo 2" class="rounded-3xl shadow-lg w-full">
         </div>
-        <p class="text-sm text-stone-400 mt-8">User ID của bạn: <span id="user-id">N/A</span></p>
-    </section>
-
-    <!-- Admin Panel (mặc định ẩn) -->
-    <section id="admin-panel" class="py-16 px-4 bg-white text-center hidden">
-        <hr class="mb-8 border-t-2 border-stone-300"/>
-        <h2 class="playfair-font text-3xl font-bold text-stone-700 mb-8">Trang Quản Lý Lời Chúc</h2>
-        <p class="text-stone-600 mb-4">Các lời chúc đã duyệt và bị ẩn:</p>
-        <div class="max-w-2xl mx-auto">
-            <ul id="pending-list" class="text-left"></ul>
+        <div class="md:w-1/2 text-left">
+          <h3 class="playfair-font text-xl font-semibold text-stone-700 mb-2">Hành trình yêu thương...</h3>
+          <p class="text-sm text-stone-600 leading-relaxed">Chúng tôi đã cùng nhau vượt qua bao thử thách...</p>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <!-- Chân trang -->
-    <footer class="bg-stone-900 text-white py-8 text-center">
-        <p class="text-sm">Copyright © <span id="current-year"></span> Văn Hoàn & Ngọc Huyền. All Rights Reserved.</p>
-        <p class="text-xs text-stone-400 mt-2">Được tạo bởi Gemini.</p>
-    </footer>
-    <script>
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-    </script>
+  <section id="gallery" class="py-16 px-4 bg-white text-center">
+    <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Album Ảnh Cưới</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+1" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 1" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+2" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 2" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+3" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 3" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+4" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 4" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+5" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 5" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+6" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 6" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+7" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 7" />
+      <img src="https://placehold.co/400x400/e0c2a5/fff?text=Ảnh+8" class="w-full h-auto rounded-xl shadow-md" alt="Ảnh 8" />
+    </div>
+  </section>
+
+  <section id="guestbook" class="py-16 px-4 bg-rose-50 text-center">
+    <h2 class="playfair-font text-3xl font-bold text-rose-500 mb-8">Sổ Lưu Bút & Lời Chúc</h2>
+    <div class="max-w-2xl mx-auto">
+      <div class="bg-white p-6 rounded-3xl shadow-lg border border-stone-200 mb-8">
+        <form onsubmit="event.preventDefault(); submitGuestbook();">
+          <div class="mb-4">
+            <label for="guest-name" class="block text-sm font-medium text-gray-700 text-left mb-1">Tên của bạn:</label>
+            <input type="text" id="guest-name" class="block w-full rounded-md border-gray-300 shadow-sm p-2 border" required />
+          </div>
+          <div class="mb-4">
+            <label for="guest-message" class="block text-sm font-medium text-gray-700 text-left mb-1">Lời chúc:</label>
+            <textarea id="guest-message" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm p-2 border" required></textarea>
+          </div>
+          <button type="submit" class="w-full bg-rose-500 text-white rounded-md py-2 font-semibold hover:bg-rose-600 transition-colors">Gửi Lời Chúc</button>
+          <p id="form-status" class="text-sm mt-2"></p>
+        </form>
+      </div>
+
+      <ul id="guestbook-list" class="text-left mt-8"></ul>
+    </div>
+    <p class="text-sm text-stone-400 mt-8">User ID của bạn: <span id="user-id">N/A</span></p>
+  </section>
+
+  <!-- Admin Panel (ẩn mặc định; dùng ?admin=true để hiện) -->
+  <section id="admin-panel" class="py-16 px-4 bg-white text-center hidden">
+    <hr class="mb-8 border-t-2 border-stone-300" />
+    <h2 class="playfair-font text-3xl font-bold text-stone-700 mb-8">Trang Quản Lý Lời Chúc</h2>
+    <p class="text-stone-600 mb-4">Ẩn/hiện bất kỳ lời chúc nào (chỉ hoạt động khi Rules cho phép UPDATE cho UID admin).</p>
+    <div class="max-w-2xl mx-auto">
+      <ul id="pending-list" class="text-left"></ul>
+    </div>
+  </section>
+
+  <footer class="bg-stone-900 text-white py-8 text-center">
+    <p class="text-sm">Copyright © <span id="current-year"></span> Văn Hoàn & Ngọc Huyền. All Rights Reserved.</p>
+    <p class="text-xs text-stone-400 mt-2">Được tạo bởi Gemini.</p>
+  </footer>
+  <script>
+    document.getElementById("current-year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
