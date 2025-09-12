@@ -72,11 +72,19 @@
             db = getFirestore(app);
             auth = getAuth(app);
             onAuthStateChanged(auth, async (user) => {
+                const statusElement = document.getElementById('user-id');
+                const submitButton = document.getElementById('submit-button');
+                const guestbookForm = document.getElementById('guestbook-form');
                 if (user) {
                     userId = user.uid;
                     console.log("User signed in:", userId);
-                    if (document.getElementById('user-id')) {
-                        document.getElementById('user-id').textContent = userId;
+                    if (statusElement) {
+                        statusElement.textContent = userId;
+                    }
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        submitButton.classList.add('hover:bg-rose-600');
                     }
                     if (isAdminMode && !user.isAnonymous) {
                         loadAdminPanel();
@@ -85,8 +93,12 @@
                     }
                 } else {
                     console.log("No user signed in yet, signing in anonymously...");
-                    if (document.getElementById('user-id')) {
-                        document.getElementById('user-id').textContent = 'Đang đăng nhập...';
+                    if (statusElement) {
+                        statusElement.textContent = 'Đang đăng nhập...';
+                    }
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
                     }
                 }
             });
@@ -334,7 +346,7 @@
                         <label for="guest-message" class="block text-sm font-medium text-gray-700 text-left mb-1">Lời chúc:</label>
                         <textarea id="guest-message" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm p-2 border" required></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-rose-500 text-white rounded-md py-2 font-semibold hover:bg-rose-600 transition-colors">Gửi Lời Chúc</button>
+                    <button type="submit" id="submit-button" class="w-full bg-rose-500 text-white rounded-md py-2 font-semibold transition-colors opacity-50 cursor-not-allowed" disabled>Gửi Lời Chúc</button>
                     <p id="form-status" class="text-sm mt-2"></p>
                 </form>
             </div>
