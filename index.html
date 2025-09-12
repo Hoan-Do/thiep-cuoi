@@ -20,9 +20,22 @@
         setLogLevel('debug');
 
         let db, auth, userId;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        
+        // BƯỚC 1: DÁN "appId" của bạn vào đây
+        // Sử dụng projectId của bạn
+        const appId = 'thiep-cuoi-c3d08';
 
+        // BƯỚC 2: DÁN "firebaseConfig" của bạn vào đây
+        // Sao chép và dán toàn bộ đối tượng từ Firebase Console > Project settings > Your apps
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
+            authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+            projectId: "thiep-cuoi-c3d08",
+            storageBucket: "thiep-cuoi-c3d08.appspot.com",
+            messagingSenderId: "221614290",
+            appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
+        };
+        
         // Kiểm tra nếu là chế độ admin
         const urlParams = new URLSearchParams(window.location.search);
         const isAdminMode = urlParams.get('admin') === 'true';
@@ -63,7 +76,7 @@
             });
 
             if (typeof __initial_auth_token !== 'undefined') {
-                signInWithCustomToken(auth, __initial_auth_token);
+                // Tùy chọn này chỉ dùng trong môi trường dev, không cần cho GitHub Pages
             } else {
                 signInAnonymously(auth);
             }
