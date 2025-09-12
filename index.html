@@ -36,6 +36,22 @@
             appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
         };
         
+        // LƯU Ý QUAN TRỌNG: CẬP NHẬT FIREBASE SECURITY RULES
+        // Lỗi "đang đăng nhập" có thể là do thiếu quyền truy cập.
+        // Vui lòng vào Firebase Console > Firestore Database > Rules
+        // và thay thế toàn bộ nội dung bằng đoạn code dưới đây.
+        // Điều này sẽ cho phép người dùng đã xác thực (bao gồm cả ẩn danh)
+        // đọc và viết dữ liệu vào bộ sưu tập 'guestbook'.
+        //
+        // rules_version = '2';
+        // service cloud.firestore {
+        //   match /databases/{database}/documents {
+        //     match /artifacts/{appId}/public/data/guestbook/{messageId} {
+        //       allow read, write: if request.auth != null;
+        //     }
+        //   }
+        // }
+        
         // Kiểm tra nếu là chế độ admin
         const urlParams = new URLSearchParams(window.location.search);
         const isAdminMode = urlParams.get('admin') === 'true';
