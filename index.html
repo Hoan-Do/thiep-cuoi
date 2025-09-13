@@ -9,9 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 
-  <!-- Firebase (v11 modular). 
-       - Public page: KHÔNG dùng Auth.
-       - Admin page (?admin=true): đăng nhập Anonymous để được phép update (hide/unhide). -->
+  <!-- Firebase (v11 modular) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import {
@@ -19,7 +17,7 @@
       doc, updateDoc
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // ---- CẤU HÌNH FIREBASE (thay bằng của bạn nếu khác) ----
+    // ---- CẤU HÌNH FIREBASE ----
     const firebaseConfig = {
       apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
       authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
@@ -36,45 +34,79 @@
     // ---- PHÂN CHẾ ĐỘ ----
     const urlParams = new URLSearchParams(window.location.search);
     const isAdmin = urlParams.get("admin") === "true";
-
-    // Tên khách mời (?to=...)
     const guestName = urlParams.get("to");
+
+    // Email admin hợp lệ để hiển thị UI quản trị (chỉ kiểm soát UI; quyền thật do Rules quyết định)
+    const ALLOWED_ADMIN_EMAILS = ["admin@example.com"]; // TODO: thay bằng email admin thực tế
+
     document.addEventListener("DOMContentLoaded", async () => {
       if (guestName) {
         const el = document.getElementById("guest-name-display");
         if (el) el.textContent = decodeURIComponent(guestName);
       }
 
-      // Public: không auth
-      let authUidText = "N/A";
-
       if (isAdmin) {
-        // Admin: đăng nhập Anonymous để được quyền update (theo Rules)
-        const { getAuth, signInAnonymously, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+        // Tải auth module khi cần admin
+        const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } =
+          await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
         const auth = getAuth(app);
-        try {
-          await signInAnonymously(auth);
-        } catch (e) {
-          console.error("Anonymous sign-in error:", e);
-        }
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            authUidText = user.uid;
-            const uidEl = document.getElementById("user-id");
-            if (uidEl) uidEl.textContent = authUidText;
+
+        // Xử lý nút đăng nhập/đăng xuất
+        const loginForm = document.getElementById("admin-login-form");
+        loginForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("admin-email").value.trim();
+          const password = document.getElementById("admin-password").value;
+          const loginMsg = document.getElementById("admin-login-msg");
+          loginMsg.textContent = "Đang đăng nhập...";
+          try {
+            await signInWithEmailAndPassword(auth, email, password);
+            loginMsg.textContent = "";
+          } catch (err) {
+            console.error("signIn error:", err);
+            loginMsg.textContent = "Đăng nhập thất bại. Kiểm tra email/mật khẩu.";
+            loginMsg.className = "text-red-500 text-sm mt-2";
           }
         });
 
-        // Hiện admin panel
-        document.getElementById("admin-panel").classList.remove("hidden");
-        loadAdminList(); // load danh sách đầy đủ để thao tác ẩn/hiện
+        document.getElementById("btn-logout").addEventListener("click", async () => {
+          await signOut(auth);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+          const uidEl = document.getElementById("user-id");
+          const adminBar = document.getElementById("admin-bar");
+          const adminPanel = document.getElementById("admin-panel");
+          const loginBox = document.getElementById("admin-login-box");
+          if (user) {
+            uidEl.textContent = user.uid;
+            const email = user.email || "";
+            // Chỉ hiển thị giao diện quản trị nếu email thuộc danh sách cho phép
+            const canAdmin = ALLOWED_ADMIN_EMAILS.includes(email);
+            adminBar.classList.remove("hidden");
+            if (canAdmin) {
+              loginBox.classList.add("hidden");
+              adminPanel.classList.remove("hidden");
+              loadAdminList(); // load danh sách cho quản trị
+            } else {
+              // Đã đăng nhập nhưng không có quyền
+              loginBox.classList.remove("hidden");
+              adminPanel.classList.add("hidden");
+              document.getElementById("admin-login-msg").textContent =
+                "Tài khoản này không có quyền quản trị.";
+              document.getElementById("admin-login-msg").className = "text-orange-600 text-sm mt-2";
+            }
+          } else {
+            // Chưa đăng nhập
+            uidEl.textContent = "N/A";
+            adminBar.classList.add("hidden");
+            loginBox.classList.remove("hidden");
+            adminPanel.classList.add("hidden");
+          }
+        });
       }
 
-      // Set user id text for public too
-      const uidEl = document.getElementById("user-id");
-      if (uidEl && !isAdmin) uidEl.textContent = authUidText;
-
-      // Load trang public
+      // Luôn tải danh sách công khai
       loadGuestbook();
     });
 
@@ -111,7 +143,7 @@
       }
     };
 
-    // ---- HIỂN THỊ CÔNG KHAI: show all trừ những cái bị ẩn ----
+    // ---- HIỂN THỊ CÔNG KHAI: show all trừ hidden ----
     function loadGuestbook() {
       const q = query(collection(db, "guestbook"), orderBy("createdAt", "desc"));
       onSnapshot(q, (snap) => {
@@ -120,8 +152,7 @@
         list.innerHTML = "";
         snap.forEach((docSnap) => {
           const data = docSnap.data();
-          // Nếu hidden === true thì KHÔNG hiển thị công khai
-          if (data.hidden === true) return;
+          if (data.hidden === true) return; // ẩn với công chúng
           const li = document.createElement("li");
           li.className = "bg-stone-50 p-4 rounded-xl shadow-sm mb-4 border border-stone-200";
           const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString("vi-VN") : "";
@@ -179,24 +210,15 @@
         await updateDoc(doc(db, "guestbook", docId), { hidden: !!hide });
       } catch (e) {
         console.error("toggleVisibility error:", e);
-        alert("Không thể cập nhật. Có thể Rules chưa cho phép UPDATE.");
+        alert("Không thể cập nhật. Có thể Rules chưa cho phép UPDATE cho email admin.");
       }
     };
   </script>
 
   <style>
-    body {
-      font-family: 'Quicksand', sans-serif;
-      background-color: #f8f0e5;
-      color: #4b5563;
-      scroll-behavior: smooth;
-    }
+    body { font-family: 'Quicksand', sans-serif; background-color: #f8f0e5; color: #4b5563; scroll-behavior: smooth; }
     .playfair-font { font-family: 'Playfair Display', serif; }
-    .bg-cover-image {
-      background-image: url('https://placehold.co/1200x800/e0c2a5/fff?text=Ảnh+cưới+đẹp');
-      background-size: cover;
-      background-position: center;
-    }
+    .bg-cover-image { background-image: url('https://placehold.co/1200x800/e0c2a5/fff?text=Ảnh+cưới+đẹp'); background-size: cover; background-position: center; }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -220,14 +242,14 @@
         <p class="quicksand-font text-lg font-semibold mb-2 text-rose-500">Tại nhà trai</p>
         <p class="mb-1">⏰ Thời gian: <span class="font-semibold">09:00</span></p>
         <p class="mb-1">📅 Ngày: <span class="font-semibold">Thứ Bảy, ngày 10/10/2025</span></p>
-        <p>📍 Địa điểm: <a href="https://maps.app.goo.gl/placeholder1" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà riêng chú rể</a></p>
+        <p>📍 Địa điểm: <a href="#" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà riêng chú rể</a></p>
       </div>
       <div class="flex-1 bg-stone-50 p-6 rounded-3xl shadow-lg border border-stone-200">
         <h3 class="playfair-font text-2xl font-semibold text-stone-700 mb-4">Tiệc Cưới</h3>
         <p class="quicksand-font text-lg font-semibold mb-2 text-rose-500">Tại nhà hàng</p>
         <p class="mb-1">⏰ Thời gian: <span class="font-semibold">18:00</span></p>
         <p class="mb-1">📅 Ngày: <span class="font-semibold">Thứ Bảy, ngày 10/10/2025</span></p>
-        <p>📍 Địa điểm: <a href="https://maps.app.goo.gl/placeholder2" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà Hàng ABC, 123 Đường XYZ, TP. HCM</a></p>
+        <p>📍 Địa điểm: <a href="#" target="_blank" class="font-semibold text-blue-600 hover:underline">Nhà Hàng ABC</a></p>
       </div>
     </div>
   </section>
@@ -293,11 +315,35 @@
     <p class="text-sm text-stone-400 mt-8">User ID của bạn: <span id="user-id">N/A</span></p>
   </section>
 
-  <!-- Admin Panel (ẩn mặc định; dùng ?admin=true để hiện) -->
-  <section id="admin-panel" class="py-16 px-4 bg-white text-center hidden">
+  <!-- Admin bar -->
+  <div id="admin-bar" class="hidden fixed top-0 left-0 right-0 bg-stone-900 text-white text-sm px-3 py-2 flex items-center justify-between">
+    <span>Chế độ quản trị</span>
+    <button id="btn-logout" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Đăng xuất</button>
+  </div>
+
+  <!-- Admin Login Box (hiện khi ?admin=true & chưa đăng nhập) -->
+  <section id="admin-login-box" class="hidden py-16 px-4 bg-white text-center">
+    <h2 class="playfair-font text-2xl font-bold text-stone-700 mb-4">Đăng nhập admin</h2>
+    <form id="admin-login-form" class="max-w-md mx-auto bg-stone-50 p-6 rounded-2xl border">
+      <div class="mb-3 text-left">
+        <label class="text-sm">Email</label>
+        <input id="admin-email" type="email" class="block w-full rounded-md border p-2" placeholder="admin@domain.com" required />
+      </div>
+      <div class="mb-3 text-left">
+        <label class="text-sm">Mật khẩu</label>
+        <input id="admin-password" type="password" class="block w-full rounded-md border p-2" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="w-full bg-stone-800 text-white rounded-md py-2 font-semibold hover:bg-stone-700">Đăng nhập</button>
+      <p id="admin-login-msg" class="text-sm mt-2"></p>
+      <p class="text-xs text-stone-500 mt-3">* Chỉ những email nằm trong danh sách cho phép mới có quyền ẩn/hiện lời chúc.</p>
+    </form>
+  </section>
+
+  <!-- Admin Panel -->
+  <section id="admin-panel" class="hidden py-16 px-4 bg-white text-center">
     <hr class="mb-8 border-t-2 border-stone-300" />
     <h2 class="playfair-font text-3xl font-bold text-stone-700 mb-8">Trang Quản Lý Lời Chúc</h2>
-    <p class="text-stone-600 mb-4">Ẩn/hiện bất kỳ lời chúc nào (chỉ hoạt động khi Rules cho phép UPDATE cho UID admin).</p>
+    <p class="text-stone-600 mb-4">Ẩn/hiện bất kỳ lời chúc nào (chỉ hoạt động khi Rules cho phép UPDATE).</p>
     <div class="max-w-2xl mx-auto">
       <ul id="pending-list" class="text-left"></ul>
     </div>
