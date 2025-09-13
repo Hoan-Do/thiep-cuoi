@@ -18,16 +18,14 @@
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ---- CẤU HÌNH FIREBASE ----
-	// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-	const firebaseConfig = {
-	  apiKey: "AIzaSyBA4RTN8dLxXI2SPP6zTcUIWumb0mqYUgU",
-	  authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
-	  projectId: "thiep-cuoi-c3d08",
-	  storageBucket: "thiep-cuoi-c3d08.firebasestorage.app",
-	  messagingSenderId: "221614290",
-	  appId: "1:221614290:web:a3db7a997326b19b3a9d0b",
-	  measurementId: "G-WECWPY5END"
-	};
+    const firebaseConfig = {
+      apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
+      authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+      projectId: "thiep-cuoi-c3d08",
+      storageBucket: "thiep-cuoi-c3d08.appspot.com",
+      messagingSenderId: "221614290",
+      appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
+    };
 
     // ---- KHỞI TẠO ----
     const app = initializeApp(firebaseConfig);
@@ -39,7 +37,15 @@
     const guestName = urlParams.get("to");
 
     // Email admin hợp lệ để hiển thị UI quản trị (chỉ kiểm soát UI; quyền thật do Rules quyết định)
-    const ALLOWED_ADMIN_EMAILS = ["hoandovan370@gmail.com"]; // TODO: thay bằng email admin thực tế
+    const ALLOWED_ADMIN_EMAILS = ["hoandovan370@gmail.com"]; // TODO: sửa đúng email admin
+
+    // Lưu biến auth & helpers cho toàn cục khi ở admin mode
+    let auth = null;
+    let getIdTokenFn = null;
+    let sendEmailVerificationFn = null;
+    let reloadFn = null;
+    let signInWithEmailAndPasswordFn = null;
+    let signOutFn = null;
 
     document.addEventListener("DOMContentLoaded", async () => {
       if (guestName) {
@@ -48,12 +54,16 @@
       }
 
       if (isAdmin) {
-        // Tải auth module khi cần admin
-        const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } =
-          await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-        const auth = getAuth(app);
+        const authMod = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+        const { getAuth, onAuthStateChanged, sendEmailVerification, reload, getIdToken, signInWithEmailAndPassword, signOut } = authMod;
+        auth = getAuth(app);
+        getIdTokenFn = getIdToken;
+        sendEmailVerificationFn = sendEmailVerification;
+        reloadFn = reload;
+        signInWithEmailAndPasswordFn = signInWithEmailAndPassword;
+        signOutFn = signOut;
 
-        // Xử lý nút đăng nhập/đăng xuất
+        // Đăng nhập form
         const loginForm = document.getElementById("admin-login-form");
         loginForm.addEventListener("submit", async (e) => {
           e.preventDefault();
@@ -62,7 +72,7 @@
           const loginMsg = document.getElementById("admin-login-msg");
           loginMsg.textContent = "Đang đăng nhập...";
           try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await signInWithEmailAndPasswordFn(auth, email, password);
             loginMsg.textContent = "";
           } catch (err) {
             console.error("signIn error:", err);
@@ -72,38 +82,46 @@
         });
 
         document.getElementById("btn-logout").addEventListener("click", async () => {
-          await signOut(auth);
+          await signOutFn(auth);
         });
 
-        onAuthStateChanged(auth, (user) => {
-          const uidEl = document.getElementById("user-id");
-          const adminBar = document.getElementById("admin-bar");
-          const adminPanel = document.getElementById("admin-panel");
-          const loginBox = document.getElementById("admin-login-box");
-          if (user) {
-            uidEl.textContent = user.uid;
-            const email = user.email || "";
-            // Chỉ hiển thị giao diện quản trị nếu email thuộc danh sách cho phép
-            const canAdmin = ALLOWED_ADMIN_EMAILS.includes(email);
-            adminBar.classList.remove("hidden");
-            if (canAdmin) {
-              loginBox.classList.add("hidden");
-              adminPanel.classList.remove("hidden");
-              loadAdminList(); // load danh sách cho quản trị
+        // Nút gửi lại email xác minh & làm mới trạng thái
+        document.getElementById("btn-resend").addEventListener("click", async () => {
+          if (!auth.currentUser) return;
+          try {
+            await sendEmailVerificationFn(auth.currentUser);
+            alert("Đã gửi email xác minh. Vui lòng kiểm tra hộp thư.");
+          } catch (e) {
+            console.error(e);
+            alert("Không gửi được email xác minh.");
+          }
+        });
+        document.getElementById("btn-refresh").addEventListener("click", async () => {
+          if (!auth.currentUser) return;
+          try {
+            await reloadFn(auth.currentUser);                   // cập nhật trạng thái verified
+            await getIdTokenFn(auth.currentUser, true);         // ép refresh ID token
+            // cập nhật hiển thị
+            updateAdminUI(auth.currentUser);
+            if (auth.currentUser.emailVerified) {
+              alert("Tài khoản đã xác minh. Bạn có thể ẩn/hiện lời chúc.");
             } else {
-              // Đã đăng nhập nhưng không có quyền
-              loginBox.classList.remove("hidden");
-              adminPanel.classList.add("hidden");
-              document.getElementById("admin-login-msg").textContent =
-                "Tài khoản này không có quyền quản trị.";
-              document.getElementById("admin-login-msg").className = "text-orange-600 text-sm mt-2";
+              alert("Email vẫn chưa xác minh. Vui lòng kiểm tra lại hộp thư.");
             }
+          } catch (e) {
+            console.error(e);
+            alert("Không làm mới được trạng thái.");
+          }
+        });
+
+        const { onAuthStateChanged: onStateChanged } = authMod; // alias
+        onStateChanged(auth, (user) => {
+          updateAdminUI(user);
+          if (user && ALLOWED_ADMIN_EMAILS.includes(user.email || "")) {
+            document.getElementById("admin-panel").classList.remove("hidden");
+            loadAdminList();
           } else {
-            // Chưa đăng nhập
-            uidEl.textContent = "N/A";
-            adminBar.classList.add("hidden");
-            loginBox.classList.remove("hidden");
-            adminPanel.classList.add("hidden");
+            document.getElementById("admin-panel").classList.add("hidden");
           }
         });
       }
@@ -111,6 +129,25 @@
       // Luôn tải danh sách công khai
       loadGuestbook();
     });
+
+    function updateAdminUI(user) {
+      const uidEl = document.getElementById("user-id");
+      const adminBar = document.getElementById("admin-bar");
+      const loginBox = document.getElementById("admin-login-box");
+      const infoEl = document.getElementById("admin-info");
+      if (user) {
+        uidEl.textContent = user.uid;
+        adminBar.classList.remove("hidden");
+        loginBox.classList.add("hidden");
+        const email = user.email || "(không có email)";
+        infoEl.textContent = `Đang đăng nhập: ${email} — Verified: ${user.emailVerified ? 'YES' : 'NO'}`;
+      } else {
+        uidEl.textContent = "N/A";
+        adminBar.classList.add("hidden");
+        loginBox.classList.remove("hidden");
+        infoEl.textContent = "";
+      }
+    }
 
     // ---- GỬI LỜI CHÚC (public) ----
     window.submitGuestbook = async () => {
@@ -180,7 +217,7 @@
         if (!list) return;
         list.innerHTML = "";
         snap.forEach((docSnap) => {
-          const data = docSnap.data();
+        const data = docSnap.data();
           const id = docSnap.id;
           const li = document.createElement("li");
           li.className = "bg-white p-4 rounded-xl shadow mb-4 border";
@@ -209,6 +246,9 @@
     // ---- Toggle ẩn/hiện ----
     window.toggleVisibility = async (docId, hide) => {
       try {
+        if (auth?.currentUser && getIdTokenFn) {
+          await getIdTokenFn(auth.currentUser, true); // refresh token để claim email_verified cập nhật
+        }
         await updateDoc(doc(db, "guestbook", docId), { hidden: !!hide });
       } catch (e) {
         console.error("toggleVisibility error:", e);
@@ -319,8 +359,12 @@
 
   <!-- Admin bar -->
   <div id="admin-bar" class="hidden fixed top-0 left-0 right-0 bg-stone-900 text-white text-sm px-3 py-2 flex items-center justify-between">
-    <span>Chế độ quản trị</span>
-    <button id="btn-logout" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Đăng xuất</button>
+    <span id="admin-info">Chế độ quản trị</span>
+    <div class="flex items-center gap-2">
+      <button id="btn-resend" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Gửi lại email xác minh</button>
+      <button id="btn-refresh" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Tôi đã xác minh</button>
+      <button id="btn-logout" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Đăng xuất</button>
+    </div>
   </div>
 
   <!-- Admin Login Box (hiện khi ?admin=true & chưa đăng nhập) -->
