@@ -282,53 +282,13 @@
     <p>&copy; <span id="current-year"></span> Văn Hoàn & Ngọc Huyền. All rights reserved.</p>
   </footer>
 
+  
+  <!-- ========= SCRIPT 1: Envelope & music (no dependency, no top-level await) ========= -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    const firebaseConfig = { apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY", authDomain: "thiep-cuoi-c3d08.firebaseapp.com", projectId: "thiep-cuoi-c3d08", storageBucket: "thiep-cuoi-c3d08.appspot.com", messagingSenderId: "221614290", appId: "1:221614290:web:a3db7a9973261b9b3a0d8b" };
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-
     const params = new URLSearchParams(location.search);
-    const nameTo = params.get("to");
-    if (nameTo) { const el=document.getElementById('guest-name-display'); if(el) el.textContent=decodeURIComponent(nameTo); } else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
 
-    window.submitGuestbook = async () => {
-      const name=(document.getElementById('guest-name').value||'').trim();
-      const message=(document.getElementById('guest-message').value||'').trim();
-      const status=document.getElementById('form-status');
-      if(!name||!message){ status.textContent="Vui lòng nhập đầy đủ thông tin."; status.className="text-red-600 mt-2"; return; }
-      try{ await addDoc(collection(db,'guestbook'),{name,message,createdAt:serverTimestamp(),hidden:false});
-        document.getElementById('guest-name').value=""; document.getElementById('guest-message').value="";
-        status.textContent="Đã gửi lời chúc thành công!"; status.className="text-green-600 mt-2";
-      }catch(e){ console.error(e); status.textContent="Gửi thất bại, vui lòng thử lại."; status.className="text-red-600 mt-2"; }
-    };
-
-    const qPublic=query(collection(db,'guestbook'),orderBy('createdAt','desc'));
-    onSnapshot(qPublic,(snap)=>{
-      const list=document.getElementById('guestbook-list'); if(!list) return; list.innerHTML="";
-      snap.forEach(docSnap=>{
-        const d=docSnap.data(); if(d.hidden===true) return;
-        const li=document.createElement('li'); li.className="mb-3 p-4 rounded-xl border border-coffee-200 bg-white/80 shadow-sm";
-        const when=d.createdAt?.toDate?d.createdAt.toDate().toLocaleString('vi-VN'):"";
-        li.innerHTML=`<p class="font-semibold text-coffee-800">${d.name||''}</p>
-                      <p class="text-coffee-700/90 mt-1">${d.message||''}</p>
-                      <p class="text-xs text-coffee-600/70 mt-2 text-right">${when}</p>`;
-        list.appendChild(li);
-      });
-    });
-
-    const target=new Date('2025-10-26T09:00:00+07:00').getTime();
-    function tick(){ const now=Date.now(), d=Math.max(0,target-now);
-      const days=Math.floor(d/864e5), hours=Math.floor(d/36e5)%24, mins=Math.floor(d/6e4)%60, secs=Math.floor(d/1e3)%60;
-      document.getElementById('days').textContent=days;
-      document.getElementById('hours').textContent=hours.toString().padStart(2,'0');
-      document.getElementById('mins').textContent=mins.toString().padStart(2,'0');
-      document.getElementById('secs').textContent=secs.toString().padStart(2,'0'); }
-    tick(); setInterval(tick,1000);
-    document.getElementById('current-year').textContent=new Date().getFullYear();
-
-    const DEFAULT_MUSIC="https://cdn.pixabay.com/download/audio/2022/04/05/audio_987b1b0d2d.mp3?filename=romantic-ambient-112996.mp3";
+    // Music
+    const DEFAULT_MUSIC="music/Shane_Filan_of_Westlife_-_Beautiful_In_White_Svadebnaya_2010_(mp3.pm).mp3";
     const audio=document.getElementById('bgm');
     const musicParam=params.get('music');
     audio.src=musicParam?decodeURIComponent(musicParam):DEFAULT_MUSIC;
@@ -337,12 +297,13 @@
     try{ setMuted(localStorage.getItem('wedding-muted')==='1'); }catch{ setMuted(false); }
     document.getElementById('music-btn').addEventListener('click',async()=>{ setMuted(!audio.muted); if(audio.paused){ try{ await audio.play(); }catch{} } });
 
+    // Envelope
     const cover=document.getElementById('cover');
     const app=document.getElementById('app');
     const openCover=async()=>{
       if(cover.classList.contains('opened')) return;
       cover.classList.add('opened');
-      try{ await audio.play(); }catch(e){
+      try{ await audio.play(); }catch{
         const unlock=async()=>{ try{ await audio.play(); }catch{} window.removeEventListener('click',unlock); window.removeEventListener('touchstart',unlock); };
         window.addEventListener('click',unlock,{once:true,passive:true});
         window.addEventListener('touchstart',unlock,{once:true,passive:true});
@@ -353,36 +314,178 @@
     cover.addEventListener('click', openCover, { passive:true });
     setTimeout(openCover, 900);
 
+    // Parallax & reveal
     const hero=document.getElementById('hero-bg');
-    window.addEventListener('scroll',()=>{ const y=window.scrollY*.25; hero.style.transform=`translate3d(0,${y}px,0)`; },{passive:true});
+    if(hero) window.addEventListener('scroll',()=>{ const y=window.scrollY*.25; hero.style.transform=`translate3d(0,${y}px,0)`; },{passive:true});
     const io=new IntersectionObserver(ents=>{ents.forEach(e=>{if(e.isIntersecting) e.target.classList.add('show');});},{threshold:.15});
     document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-
-    const grid=document.getElementById('gallery-grid');
-    const sources=Array.from(grid.querySelectorAll('img')).map(img=>img.getAttribute('data-full')||img.src);
-    let idx=0,startX=0;
-    const lb=document.createElement('div');
-    lb.className='lb-backdrop';
-    lb.innerHTML=`<button class="lb-close" aria-label="Đóng">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-      <button class="lb-btn lb-prev" aria-label="Ảnh trước">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <img class="lb-img" alt="preview">
-      <button class="lb-btn lb-next" aria-label="Ảnh sau">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-      </button>`;
-    document.body.appendChild(lb);
-    const imgEl=lb.querySelector('.lb-img'); const prevB=lb.querySelector('.lb-prev'); const nextB=lb.querySelector('.lb-next'); const closeB=lb.querySelector('.lb-close');
-    function show(i){ idx=(i+sources.length)%sources.length; imgEl.src=sources[idx]; lb.classList.add('active'); }
-    function hide(){ lb.classList.remove('active'); imgEl.src=''; }
-    grid.addEventListener('click',e=>{ const img=e.target.closest('img'); if(!img) return; const i=Array.from(grid.querySelectorAll('img')).indexOf(img); show(i); });
-    prevB.addEventListener('click',()=>show(idx-1)); nextB.addEventListener('click',()=>show(idx+1)); closeB.addEventListener('click',hide);
-    lb.addEventListener('click',e=>{ if(e.target===lb) hide(); });
-    window.addEventListener('keydown',e=>{ if(!lb.classList.contains('active')) return; if(e.key==='Escape') hide(); if(e.key==='ArrowLeft') show(idx-1); if(e.key==='ArrowRight') show(idx+1); });
-    imgEl.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; },{passive:true});
-    imgEl.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-startX; if(Math.abs(dx)>40) (dx>0?prevB:nextB).click(); });
   </script>
+
+  <!-- ========= SCRIPT 2: App content (Firebase + Admin) — no top-level await ========= -->
+  <script type="module">
+    (async () => {
+      try {
+        const [{ initializeApp }, { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc }] = await Promise.all([
+          import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+          import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"),
+        ]);
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
+          authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+          projectId: "thiep-cuoi-c3d08",
+          storageBucket: "thiep-cuoi-c3d08.appspot.com",
+          messagingSenderId: "221614290",
+          appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
+
+        // Guest name in hero
+        const params = new URLSearchParams(location.search);
+        const nameTo = params.get("to");
+        if (nameTo) { const el=document.getElementById('guest-name-display'); if(el) el.textContent=decodeURIComponent(nameTo); }
+        else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
+
+        // Submit
+        window.submitGuestbook = async () => {
+          const name=(document.getElementById('guest-name')?.value||'').trim();
+          const message=(document.getElementById('guest-message')?.value||'').trim();
+          const status=document.getElementById('form-status');
+          if(!name||!message){ if(status){ status.textContent="Vui lòng nhập đầy đủ thông tin."; status.className="text-red-600 mt-2"; } return; }
+          try{
+            await addDoc(collection(db,'guestbook'),{name,message,createdAt:serverTimestamp(),hidden:false});
+            if (document.getElementById('guest-name')) document.getElementById('guest-name').value="";
+            if (document.getElementById('guest-message')) document.getElementById('guest-message').value="";
+            if(status){ status.textContent="Đã gửi lời chúc thành công!"; status.className="text-green-600 mt-2"; }
+          }catch(e){ console.error(e); if(status){ status.textContent="Gửi thất bại, vui lòng thử lại."; status.className="text-red-600 mt-2"; } }
+        };
+
+        // Public render
+        const qPublic=query(collection(db,'guestbook'),orderBy('createdAt','desc'));
+        onSnapshot(qPublic,(snap)=>{
+          const list=document.getElementById('guestbook-list'); if(!list) return; list.innerHTML="";
+          snap.forEach(docSnap=>{
+            const d=docSnap.data(); if(d.hidden===true) return;
+            const li=document.createElement('li'); li.className="mb-3 p-4 rounded-xl border border-coffee-200 bg-white/80 shadow-sm";
+            const when=d.createdAt?.toDate?d.createdAt.toDate().toLocaleString('vi-VN'):"";
+            li.innerHTML=`<p class="font-semibold text-coffee-800">${d.name||''}</p>
+                          <p class="text-coffee-700/90 mt-1">${d.message||''}</p>
+                          <p class="text-xs text-coffee-600/70 mt-2 text-right">${when}</p>`;
+            list.appendChild(li);
+          });
+        });
+
+        // Admin
+        const isAdmin=params.get('admin')==='true';
+        if(isAdmin){
+          const { getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,getIdToken,sendEmailVerification,reload } =
+            await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+          const auth=getAuth(app);
+          const loginBox=document.getElementById('admin-login-box');
+          const adminBar=document.getElementById('admin-bar');
+          const adminPanel=document.getElementById('admin-panel');
+          const info=document.getElementById('admin-info');
+          const uidPlace=document.getElementById('user-id');
+
+          document.getElementById('admin-login-form')?.addEventListener('submit',async(e)=>{
+            e.preventDefault();
+            const email=document.getElementById('admin-email').value.trim();
+            const pass=document.getElementById('admin-password').value;
+            const msg=document.getElementById('admin-login-msg');
+            msg.textContent="Đang đăng nhập...";
+            try{ await signInWithEmailAndPassword(auth,email,pass); msg.textContent=""; }
+            catch(err){ console.error(err); msg.textContent="Đăng nhập thất bại. Kiểm tra email/mật khẩu."; msg.className="text-red-600 mt-2 text-center"; }
+          });
+          document.getElementById('btn-logout')?.addEventListener('click',()=>signOut(auth));
+          document.getElementById('btn-resend')?.addEventListener('click',async()=>{ if(!auth.currentUser) return; await sendEmailVerification(auth.currentUser); alert("Đã gửi email xác minh."); });
+          document.getElementById('btn-refresh')?.addEventListener('click',async()=>{ if(!auth.currentUser) return; await reload(auth.currentUser); await getIdToken(auth.currentUser,true); updateUI(auth.currentUser); });
+
+          function updateUI(user){
+            if(user){ uidPlace.textContent=user.uid; adminBar.classList.remove('hidden'); loginBox.classList.add('hidden');
+              info.textContent=`Đang đăng nhập: ${user.email||''} — Verified: ${user.emailVerified?'YES':'NO'}`;
+              if(['hoandovan370@gmail.com'].includes(user.email||'')){ adminPanel.classList.remove('hidden'); bindAdminList(); }
+              else adminPanel.classList.add('hidden');
+            }else{ uidPlace.textContent='N/A'; adminBar.classList.add('hidden'); loginBox.classList.remove('hidden'); adminPanel.classList.add('hidden'); }
+          }
+
+          function bindAdminList(){
+            const q=query(collection(db,'guestbook'),orderBy('createdAt','desc'));
+            onSnapshot(q,(snap)=>{
+              const list=document.getElementById('pending-list'); if(!list) return; list.innerHTML="";
+              snap.forEach(docSnap=>{
+                const d=docSnap.data(); const id=docSnap.id;
+                const when=d.createdAt?.toDate?d.createdAt.toDate().toLocaleString('vi-VN'):"";
+                const isHidden=d.hidden===true;
+                const li=document.createElement('li');
+                li.className="p-4 rounded-xl border bg-white flex items-start justify-between gap-4";
+                li.innerHTML=`<div>
+                                <p class="font-semibold ${isHidden?'line-through text-coffee-500/60':''}">${d.name||''}</p>
+                                <p class="${isHidden?'line-through text-coffee-500/60':''}">${d.message||''}</p>
+                                <p class="text-xs text-coffee-600/70 mt-1">${when}</p>
+                              </div>
+                              <button data-id="${id}" data-hide="${!isHidden}" class="px-3 py-1 rounded-md border ${isHidden?'bg-green-50 border-green-300 text-green-700':'bg-rose-50 border-rose-300 text-rose-700'}">
+                                ${isHidden?'Hiện':'Ẩn'}
+                              </button>`;
+                list.appendChild(li);
+              });
+            });
+            document.getElementById('pending-list')?.addEventListener('click',async(e)=>{
+              const btn=e.target.closest('button[data-id]'); if(!btn) return;
+              const id=btn.getAttribute('data-id'); const hide=btn.getAttribute('data-hide')==='true';
+              try{ if(auth.currentUser) await getIdToken(auth.currentUser,true); await updateDoc(doc(db,'guestbook',id),{hidden:!!hide}); }
+              catch(err){ console.error(err); alert("Không thể cập nhật. Kiểm tra Rules & email admin."); }
+            });
+          }
+          onAuthStateChanged(auth,updateUI);
+        }
+
+        // Countdown
+        const target=new Date('2025-10-26T09:00:00+07:00').getTime();
+        function tick(){
+          const now=Date.now(), d=Math.max(0,target-now);
+          const days=Math.floor(d/864e5), hours=Math.floor(d/36e5)%24, mins=Math.floor(d/6e4)%60, secs=Math.floor(d/1e3)%60;
+          document.getElementById('days').textContent=days;
+          document.getElementById('hours').textContent=hours.toString().padStart(2,'0');
+          document.getElementById('mins').textContent=mins.toString().padStart(2,'0');
+          document.getElementById('secs').textContent=secs.toString().padStart(2,'0');
+        }
+        tick(); setInterval(tick,1000);
+        document.getElementById('current-year').textContent=new Date().getFullYear();
+
+        // Lightbox
+        const grid=document.getElementById('gallery-grid');
+        if(grid){
+          const sources=Array.from(grid.querySelectorAll('img')).map(img=>img.getAttribute('data-full')||img.src);
+          let idx=0,startX=0;
+          const lb=document.createElement('div');
+          lb.className='lb-backdrop';
+          lb.innerHTML=`<button class="lb-close" aria-label="Đóng">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+            <button class="lb-btn lb-prev" aria-label="Ảnh trước">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <img class="lb-img" alt="preview">
+            <button class="lb-btn lb-next" aria-label="Ảnh sau">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </button>`;
+          document.body.appendChild(lb);
+          const imgEl=lb.querySelector('.lb-img'); const prevB=lb.querySelector('.lb-prev'); const nextB=lb.querySelector('.lb-next'); const closeB=lb.querySelector('.lb-close');
+          function show(i){ idx=(i+sources.length)%sources.length; imgEl.src=sources[idx]; lb.classList.add('active'); }
+          function hide(){ lb.classList.remove('active'); imgEl.src=''; }
+          grid.addEventListener('click',e=>{ const img=e.target.closest('img'); if(!img) return; const i=Array.from(grid.querySelectorAll('img')).indexOf(img); show(i); });
+          prevB.addEventListener('click',()=>show(idx-1)); nextB.addEventListener('click',()=>show(idx+1)); closeB.addEventListener('click',hide);
+          lb.addEventListener('click',e=>{ if(e.target===lb) hide(); });
+          window.addEventListener('keydown',e=>{ if(!lb.classList.contains('active')) return; if(e.key==='Escape') hide(); if(e.key==='ArrowLeft') show(idx-1); if(e.key==='ArrowRight') show(idx+1); });
+          imgEl.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; },{passive:true});
+          imgEl.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-startX; if(Math.abs(dx)>40) (dx>0?prevB:nextB).click(); });
+        }
+      } catch (err) {
+        console.warn('[App init warning]', err);
+      }
+    })();
+  </script>
+
 </body>
 </html>
