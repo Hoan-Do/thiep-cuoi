@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Italiana&family=Quicksand:wght@400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Italiana&family=Quicksand:wght@400;600;700&family=Great+Vibes&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -80,6 +80,11 @@
     .lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.85);border-radius:999px;width:42px;height:42px;display:grid;place-items:center}
     .lb-prev{left:18px}.lb-next{right:18px}
     .lb-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.9);width:38px;height:38px;border-radius:999px;display:grid;place-items:center}
+
+    .seal .xi{font-family:'Noto Serif SC', serif;font-weight:900;font-size:86px;
+      background:linear-gradient(#f6d9a5,#c99f5f);-webkit-background-clip:text;background-clip:text;color:transparent;
+      filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;}
+
   </style>
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
@@ -90,15 +95,7 @@
     <div class="side right"></div>
 
     <div class="seal" aria-label="Niêm phong">
-      <svg viewBox="0 0 256 256" fill="#4b2a17">
-        <defs>
-          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#f6d9a5"/>
-            <stop offset="1" stop-color="#c99f5f"/>
-          </linearGradient>
-        </defs>
-        <path fill="url(#g)" d="M32 48h80v24H56v16h56v24H56v16h56v24H32v-24h8v-16h-8v-24h8V88h-8V64h8V48Zm112 0h80v24h-56v16h56v24h-56v16h56v24h-80v-24h8v-16h-8v-24h8V88h-8V64h8V48Z"/>
-      </svg>
+      <span class="xi" aria-hidden="true">囍</span>
     </div>
 
     <div class="hint">Chạm để mở thiệp</div>
@@ -289,6 +286,7 @@
 
     // Music
     const DEFAULT_MUSIC="music/Shane_Filan_of_Westlife_-_Beautiful_In_White_Svadebnaya_2010_(mp3.pm).mp3";
+    const FALLBACK_MUSIC="https://cdn.pixabay.com/download/audio/2022/04/05/audio_987b1b0d2d.mp3?filename=romantic-ambient-112996.mp3";
     const audio=document.getElementById('bgm');
     const musicParam=params.get('music');
     audio.src=musicParam?decodeURIComponent(musicParam):DEFAULT_MUSIC;
@@ -296,6 +294,8 @@
     function setMuted(m){ audio.muted=m; (m?icoOn.classList.add('hidden'):icoOn.classList.remove('hidden')); (m?icoOff.classList.remove('hidden'):icoOff.classList.add('hidden')); try{localStorage.setItem('wedding-muted',m?'1':'0')}catch{} }
     try{ setMuted(localStorage.getItem('wedding-muted')==='1'); }catch{ setMuted(false); }
     document.getElementById('music-btn').addEventListener('click',async()=>{ setMuted(!audio.muted); if(audio.paused){ try{ await audio.play(); }catch{} } });
+
+    audio.addEventListener('error',()=>{ try{ if(audio.currentSrc.indexOf('pixabay.com')===-1){ audio.src=FALLBACK_MUSIC; audio.play().catch(()=>{}); } }catch(e){} });
 
     // Envelope
     const cover=document.getElementById('cover');
@@ -330,14 +330,16 @@
           import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"),
         ]);
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
-          authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
-          projectId: "thiep-cuoi-c3d08",
-          storageBucket: "thiep-cuoi-c3d08.appspot.com",
-          messagingSenderId: "221614290",
-          appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
-        };
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+		const firebaseConfig = {
+		  apiKey: "AIzaSyBA4RTN8dLxXI2SPP6zTcUIWumb0mqYUgU",
+		  authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+		  projectId: "thiep-cuoi-c3d08",
+		  storageBucket: "thiep-cuoi-c3d08.firebasestorage.app",
+		  messagingSenderId: "221614290",
+		  appId: "1:221614290:web:a3db7a997326b19b3a9d0b",
+		  measurementId: "G-WECWPY5END"
+		};
         const app = initializeApp(firebaseConfig);
         const db  = getFirestore(app);
 
