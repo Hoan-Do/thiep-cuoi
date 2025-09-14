@@ -2,9 +2,13 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Use viewport-fit=cover to respect safe areas on iPhone (notches, home bar) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Hoàn & Huyền</title>
   <meta name="description" content="Thiệp cưới online phong cách mộc nâu của Văn Hoàn & Ngọc Huyền" />
+
+  <!-- Preload hero image for faster LCP on mobile -->
+  <link rel="preload" as="image" href="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1470&auto=format&fit=crop">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +40,10 @@
   </script>
   <style>
     html,body{scroll-behavior:smooth}
+    :root{
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
     .section-frame{
       background:linear-gradient(#fff,#fff) padding-box,
                  linear-gradient(135deg,rgba(139,94,60,.25),rgba(212,163,115,.25)) border-box;
@@ -58,7 +66,7 @@
     #cover .seal{
       position:absolute;left:50%;bottom:30%;
       transform:translate(-50%,50%);
-      width:128px;height:128px;border-radius:999px;
+      width:120px;height:120px;border-radius:999px;
       background: radial-gradient(60% 60% at 30% 30%, #cc8b5a, #8a5630 70%);
       box-shadow: inset 0 8px 18px rgba(255,255,255,.25), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
       display:grid;place-items:center;
@@ -67,7 +75,7 @@
     .seal svg{width:70%;height:70%}
     #cover.opened .seal{transform:translate(calc(50vw - 50%),50%) rotate(6deg)}
     #cover .card{display:none}
-    #cover .hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.18);padding:.4rem .8rem;border-radius:12px;font-size:.9rem;letter-spacing:.06em;opacity:.9}
+    #cover .hint{position:absolute;left:50%;bottom:calc(18px + var(--sab));transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.18);padding:.5rem .85rem;border-radius:12px;font-size:.9rem;letter-spacing:.06em;opacity:.9}
 
     /* ======== APP fade-in after open ======== */
     #app{opacity:0;filter:blur(2px);transform:translateY(6px);transition:opacity .7s ease, filter .7s ease, transform .7s ease}
@@ -77,14 +85,26 @@
     .lb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:60}
     .lb-backdrop.active{display:flex}
     .lb-img{max-width:92vw;max-height:82vh;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-    .lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.85);border-radius:999px;width:42px;height:42px;display:grid;place-items:center}
+    .lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.85);border-radius:999px;width:44px;height:44px;display:grid;place-items:center}
     .lb-prev{left:18px}.lb-next{right:18px}
-    .lb-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.9);width:38px;height:38px;border-radius:999px;display:grid;place-items:center}
+    .lb-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.9);width:40px;height:40px;border-radius:999px;display:grid;place-items:center}
 
-    .seal .xi{font-family:'Noto Serif SC', serif;font-weight:900;font-size:86px;
+    .seal .xi{font-family:'Noto Serif SC', serif;font-weight:900;font-size:80px;
       background:linear-gradient(#f6d9a5,#c99f5f);-webkit-background-clip:text;background-clip:text;color:transparent;
       filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;}
 
+    /* ===== Mobile helpers ===== */
+    .no-scrollbar::-webkit-scrollbar{ display:none; }
+    .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+    .tappable{ touch-action: manipulation; }
+    /* Improve focus styles for accessibility */
+    :focus-visible{ outline:3px solid #8b5e3c; outline-offset:2px; border-radius:10px; }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .reveal{ transition: none !important; }
+      #cover .side, #cover .seal, #app{ transition: none !important; }
+    }
   </style>
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
@@ -102,7 +122,7 @@
   </div>
 
   <!-- ===== MUSIC: will start when envelope opens, with mute toggle ===== -->
-  <button id="music-btn" class="fixed bottom-4 right-4 z-50 rounded-full bg-coffee-900 text-white w-12 h-12 grid place-items-center shadow-lg opacity-90 hover:opacity-100" aria-label="Tắt/Bật tiếng">
+  <button id="music-btn" class="fixed z-50 rounded-full bg-coffee-900 text-white w-12 h-12 grid place-items-center shadow-lg opacity-90 hover:opacity-100 tappable" style="right:1rem; bottom: calc(1rem + var(--sab));" aria-label="Tắt/Bật tiếng">
     <svg id="icon-sound-on"  xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3zM16.5 12a4.5 4.5 0 01-2.12 3.84l1.06 1.82A6.5 6.5 0 0018.5 12a6.5 6.5 0 00-3.06-5.66l-1.06 1.82A4.5 4.5 0 0116.5 12z"/></svg>
     <svg id="icon-sound-off" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12a4.5 4.5 0 01-2.12 3.84l1.06 1.82A6.5 6.5 0 0018.5 12a6.5 6.5 0 00-3.06-5.66l-1.06 1.82A4.5 4.5 0 0116.5 12z"/><path d="M3 10v4h4l5 5V5L7 10H3zM19 8l-2 2m0 4l2 2"/></svg>
   </button>
@@ -112,48 +132,49 @@
     <header id="home" class="relative min-h-[88svh] grid place-items-center overflow-hidden">
       <div class="absolute inset-0 bg-hero bg-cover bg-center will-change-transform" id="hero-bg"></div>
       <div class="absolute inset-0 bg-coffee-900/55"></div>
-      <div class="relative z-10 text-center px-6 py-24">
-        <p class="font-script text-4xl sm:text-5xl text-white/90 reveal">Thiệp Mời</p>
-        <h1 class="font-display tracking-widest text-white text-5xl sm:text-7xl md:text-8xl mt-2 reveal">VĂN HOÀN</h1>
+      <div class="relative z-10 text-center px-5 py-24 max-w-[92vw] mx-auto">
+        <p class="font-script text-3xl sm:text-5xl text-white/90 reveal">Thiệp Mời</p>
+        <h1 class="font-display tracking-widest text-white text-4xl sm:text-6xl md:text-8xl mt-2 reveal">VĂN HOÀN</h1>
         <p class="text-4xl md:text-5xl font-script text-rosey -mt-2 md:-mt-3 reveal">&</p>
-        <h2 class="font-display tracking-widest text-white text-4xl sm:text-6xl md:text-7xl reveal">NGỌC HUYỀN</h2>
+        <h2 class="font-display tracking-widest text-white text-3xl sm:text-5xl md:text-7xl reveal">NGỌC HUYỀN</h2>
         <p id="guest-line" class="mt-5 text-white/95 reveal">Trân trọng kính mời <span id="guest-name-display" class="font-semibold"></span></p>
-        <div class="mt-8 inline-flex gap-3 reveal">
-          <a href="#timeline" class="px-5 py-2 rounded-full bg-white/90 hover:bg-white text-coffee-900 font-semibold shadow-md">Xem lịch</a>
-          <a href="#guestbook" class="px-5 py-2 rounded-full border border-white/70 text-white/95 hover:bg-white/10">Gửi lời chúc</a>
+        <div class="mt-7 inline-flex gap-2 sm:gap-3 reveal">
+          <a href="#timeline" class="px-4 sm:px-5 py-2 rounded-full bg-white/90 hover:bg-white text-coffee-900 font-semibold shadow-md tappable">Xem lịch</a>
+          <a href="#guestbook" class="px-4 sm:px-5 py-2 rounded-full border border-white/70 text-white/95 hover:bg-white/10 tappable">Gửi lời chúc</a>
         </div>
       </div>
     </header>
 
-    <nav class="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-coffee-200">
-      <div class="max-w-6xl mx-auto px-4 py-2 flex items-center gap-6 text-sm">
-        <a href="#timeline" class="hover:text-coffee-700">Lịch trình</a>
-        <a href="#countdown" class="hover:text-coffee-700">Đếm ngược</a>
-        <a href="#gallery" class="hover:text-coffee-700">Album</a>
-        <a href="#guestbook" class="hover:text-coffee-700">Sổ lưu bút</a>
-        <a href="#qr" class="hover:text-coffee-700">QR</a>
-        <span class="ml-auto text-coffee-700/80">26.10.2025</span>
+    <!-- Mobile-friendly sticky nav: horizontally scrollable to avoid wrapping -->
+    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 border-b border-coffee-200">
+      <div class="max-w-6xl mx-auto px-3 py-2 flex items-center gap-5 overflow-x-auto no-scrollbar text-sm whitespace-nowrap">
+        <a href="#timeline" class="hover:text-coffee-700 tappable">Lịch trình</a>
+        <a href="#countdown" class="hover:text-coffee-700 tappable">Đếm ngược</a>
+        <a href="#gallery" class="hover:text-coffee-700 tappable">Album</a>
+        <a href="#guestbook" class="hover:text-coffee-700 tappable">Sổ lưu bút</a>
+        <a href="#qr" class="hover:text-coffee-700 tappable">QR</a>
+        <span class="ml-auto text-coffee-700/80 hidden sm:inline">26.10.2025</span>
       </div>
     </nav>
 
-    <section id="timeline" class="max-w-5xl mx-auto px-4 py-14">
-      <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">Lịch trình ngày cưới</h3>
-      <div class="mt-10 relative">
+    <section id="timeline" class="max-w-5xl mx-auto px-4 py-12 scroll-mt-20 md:scroll-mt-28">
+      <h3 class="font-serif text-2xl sm:text-3xl font-bold text-center text-coffee-700 reveal">Lịch trình ngày cưới</h3>
+      <div class="mt-8 sm:mt-10 relative">
         <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] bg-coffee-300 hidden md:block"></div>
-        <div class="md:grid md:grid-cols-2 items-center gap-8 mb-10">
+        <div class="md:grid md:grid-cols-2 items-center gap-8 mb-8 sm:mb-10">
           <div class="md:text-right md:pr-10">
             <div class="inline-block section-frame px-5 py-4 reveal">
               <p class="uppercase tracking-widest text-coffee-600 text-xs">Lễ Thành Hôn</p>
               <p class="font-serif text-2xl font-bold text-coffee-800">09:00 — 26/10/2025</p>
               <p class="text-coffee-800/90">Tại nhà trai</p>
-              <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" href="https://maps.google.com">Xem bản đồ</a>
+              <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.google.com">Xem bản đồ</a>
             </div>
           </div>
           <div class="relative hidden md:block">
             <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-coffee-600 border-4 border-coffee-100"></div>
           </div>
         </div>
-        <div class="md:grid md:grid-cols-2 items-center gap-8 mb-10">
+        <div class="md:grid md:grid-cols-2 items-center gap-8 mb-8 sm:mb-10">
           <div class="relative order-2 md:order-1 hidden md:block">
             <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-coffee-600 border-4 border-coffee-100"></div>
           </div>
@@ -162,75 +183,79 @@
               <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
               <p class="font-serif text-2xl font-bold text-coffee-800">18:00 — 26/10/2025</p>
               <p class="text-coffee-800/90">Nhà hàng ABC</p>
-              <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" href="https://maps.google.com">Xem bản đồ</a>
+              <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.google.com">Xem bản đồ</a>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="countdown" class="bg-white/70">
-      <div class="max-w-6xl mx-auto px-4 py-14 text-center">
-        <h3 class="font-serif text-3xl font-bold text-coffee-700 reveal">Đếm ngược tới ngày vui</h3>
-        <div id="counter" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
-          <div class="section-frame py-6 reveal"><div id="days"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Ngày</div></div>
-          <div class="section-frame py-6 reveal"><div id="hours" class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giờ</div></div>
-          <div class="section-frame py-6 reveal"><div id="mins"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Phút</div></div>
-          <div class="section-frame py-6 reveal"><div id="secs"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giây</div></div>
+    <section id="countdown" class="bg-white/70 scroll-mt-20 md:scroll-mt-28">
+      <div class="max-w-6xl mx-auto px-4 py-12 sm:py-14 text-center">
+        <h3 class="font-serif text-2xl sm:text-3xl font-bold text-coffee-700 reveal">Đếm ngược tới ngày vui</h3>
+        <div id="counter" class="mt-5 sm:mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto select-none">
+          <div class="section-frame py-5 sm:py-6 reveal"><div id="days"  class="text-3xl sm:text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Ngày</div></div>
+          <div class="section-frame py-5 sm:py-6 reveal"><div id="hours" class="text-3xl sm:text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giờ</div></div>
+          <div class="section-frame py-5 sm:py-6 reveal"><div id="mins"  class="text-3xl sm:text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Phút</div></div>
+          <div class="section-frame py-5 sm:py-6 reveal"><div id="secs"  class="text-3xl sm:text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giây</div></div>
         </div>
       </div>
     </section>
 
-    <section id="gallery" class="bg-white/70">
-      <div class="max-w-6xl mx-auto px-4 py-14">
-        <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">Album ảnh cưới</h3>
-        <div id="gallery-grid" class="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <img src="image/Anh_album_1_rz.jpg" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_2_rz.jpg" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_3_rz.jpg" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_4_rz.jpg" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_5_rz.jpg" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_6_rz.jpg" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_7_rz.jpg" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-          <img src="image/Anh_album_8_rz.jpg" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+    <section id="gallery" class="bg-white/70 scroll-mt-20 md:scroll-mt-28">
+      <div class="max-w-6xl mx-auto px-4 py-12 sm:py-14">
+        <h3 class="font-serif text-2xl sm:text-3xl font-bold text-center text-coffee-700 reveal">Album ảnh cưới</h3>
+        <div id="gallery-grid" class="mt-6 sm:mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 1">
+          <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 2">
+          <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 3">
+          <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 4">
+          <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 5">
+          <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 6">
+          <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 7">
+          <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in reveal" alt="Ảnh cưới 8">
         </div>
       </div>
     </section>
 
-    <section id="guestbook" class="max-w-6xl mx-auto px-4 py-14">
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="section-frame p-6 reveal">
+    <section id="guestbook" class="max-w-6xl mx-auto px-4 py-12 sm:py-14 scroll-mt-20 md:scroll-mt-28">
+      <div class="grid md:grid-cols-2 gap-5 sm:gap-6">
+        <div class="section-frame p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700">Sổ lưu bút & lời chúc</h3>
           <form class="mt-4" onsubmit="event.preventDefault(); submitGuestbook();">
             <label class="text-sm">Tên của bạn</label>
-            <input id="guest-name" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5" required />
+            <input id="guest-name" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5 text-[16px]" autocomplete="name" required />
             <label class="text-sm block mt-3">Lời chúc</label>
-            <textarea id="guest-message" rows="4" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5" required></textarea>
-            <button class="mt-3 w-full rounded-lg bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-2.5">Gửi lời chúc</button>
-            <p id="form-status" class="text-sm mt-2"></p>
+            <textarea id="guest-message" rows="4" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5 text-[16px]" placeholder="Gửi vài lời yêu thương..." required></textarea>
+            <button class="mt-3 w-full rounded-lg bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-2.5 tappable">Gửi lời chúc</button>
+            <p id="form-status" class="text-sm mt-2" aria-live="polite"></p>
           </form>
           <p class="text-xs text-coffee-500 mt-4">User ID: <span id="user-id">N/A</span></p>
         </div>
         <div class="section-frame p-0 overflow-hidden reveal">
-          <div class="px-6 pt-6">
+          <div class="px-5 sm:px-6 pt-5 sm:pt-6">
             <h4 class="font-serif text-xl font-bold text-coffee-700">Lời chúc từ bạn bè</h4>
             <p class="text-sm text-coffee-700/80">Các lời chúc mới nhất sẽ hiện lên ngay tại đây 💌</p>
           </div>
           <div class="divider my-4"></div>
-          <ul id="guestbook-list" class="px-6 pb-6 max-h-[520px] overflow-auto"></ul>
+          <ul id="guestbook-list" class="px-5 sm:px-6 pb-5 sm:pb-6 max-h-[520px] overflow-auto"></ul>
         </div>
       </div>
     </section>
 
-    <section id="qr" class="bg-white/70">
-      <div class="max-w-6xl mx-auto px-4 py-14">
-        <div class="mt-8 grid sm:grid-cols-2 gap-6">
-            <h4 class="font-serif text-xl font-semibold text-coffee-800">Mừng cưới đến Chú rể</h4>
-            <img class="mx-auto my-4 w-44 h-44" alt="QR code"
-              src="image/QRTKVanHoan.jpg" />
-            <h4 class="font-serif text-xl font-semibold text-coffee-800">Mừng cưới đến Cô dâu</h4>
-            <img class="mx-auto my-4 w-44 h-44" alt="QR code"
-              src="image/QRTKNgocHuyen.jpg" />
+    <section id="qr" class="bg-white/70 scroll-mt-20 md:scroll-mt-28">
+      <div class="max-w-6xl mx-auto px-4 py-12 sm:py-14">
+        <div class="mt-3 sm:mt-8 grid sm:grid-cols-2 gap-4 sm:gap-6 items-start">
+            <div class="text-center sm:text-left">
+              <h4 class="font-serif text-xl font-semibold text-coffee-800">Mừng cưới đến Chú rể</h4>
+              <img class="mx-auto my-3 sm:my-4 w-44 h-44" alt="QR mừng cưới đến chú rể" loading="lazy" decoding="async"
+                src="image/QRTKVanHoan.jpg" />
+            </div>
+            <div class="text-center sm:text-left">
+              <h4 class="font-serif text-xl font-semibold text-coffee-800">Mừng cưới đến Cô dâu</h4>
+              <img class="mx-auto my-3 sm:my-4 w-44 h-44" alt="QR mừng cưới đến cô dâu" loading="lazy" decoding="async"
+                src="image/QRTKNgocHuyen.jpg" />
+            </div>
         </div>
       </div>
     </section>
@@ -239,9 +264,9 @@
   <div id="admin-bar" class="hidden fixed top-0 left-0 right-0 bg-coffee-900 text-white text-sm px-3 py-2 flex items-center justify-between z-50">
     <span id="admin-info">Chế độ quản trị</span>
     <div class="flex items-center gap-2">
-      <button id="btn-resend" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Gửi lại email xác minh</button>
-      <button id="btn-refresh" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Tôi đã xác minh</button>
-      <button id="btn-logout" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30">Đăng xuất</button>
+      <button id="btn-resend" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30 tappable">Gửi lại email xác minh</button>
+      <button id="btn-refresh" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30 tappable">Tôi đã xác minh</button>
+      <button id="btn-logout" class="text-xs bg-white/20 rounded px-2 py-1 hover:bg-white/30 tappable">Đăng xuất</button>
     </div>
   </div>
 
@@ -250,10 +275,10 @@
       <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Đăng nhập admin</h3>
       <form id="admin-login-form" class="max-w-md mx-auto mt-4">
         <label class="text-sm">Email</label>
-        <input id="admin-email" type="email" class="mt-1 w-full rounded-lg border border-coffee-200 p-2.5" placeholder="ban@domain.com" required />
+        <input id="admin-email" type="email" class="mt-1 w-full rounded-lg border border-coffee-200 p-2.5 text-[16px]" placeholder="ban@domain.com" autocomplete="email" required />
         <label class="text-sm block mt-3">Mật khẩu</label>
-        <input id="admin-password" type="password" class="mt-1 w-full rounded-lg border border-coffee-200 p-2.5" placeholder="••••••••" required />
-        <button class="mt-4 w-full rounded-lg bg-coffee-900 text-white font-semibold py-2.5">Đăng nhập</button>
+        <input id="admin-password" type="password" class="mt-1 w-full rounded-lg border border-coffee-200 p-2.5 text-[16px]" placeholder="••••••••" autocomplete="current-password" required />
+        <button class="mt-4 w-full rounded-lg bg-coffee-900 text-white font-semibold py-2.5 tappable">Đăng nhập</button>
         <p id="admin-login-msg" class="text-sm mt-2 text-center"></p>
       </form>
     </div>
@@ -271,7 +296,6 @@
     <p>&copy; <span id="current-year"></span> Văn Hoàn & Ngọc Huyền. All rights reserved.</p>
   </footer>
 
-  
   <!-- ========= SCRIPT 1: Envelope & music (no dependency, no top-level await) ========= -->
   <script type="module">
     const params = new URLSearchParams(location.search);
@@ -291,7 +315,7 @@
 
     // Envelope
     const cover=document.getElementById('cover');
-    const app=document.getElementById('app');
+    const appEl=document.getElementById('app');
     const openCover=async()=>{
       if(cover.classList.contains('opened')) return;
       cover.classList.add('opened');
@@ -300,15 +324,16 @@
         window.addEventListener('click',unlock,{once:true,passive:true});
         window.addEventListener('touchstart',unlock,{once:true,passive:true});
       }
-      app.classList.add('visible');
+      appEl.classList.add('visible');
       setTimeout(()=>{ cover.style.display='none'; }, 1950);
     };
     cover.addEventListener('click', openCover, { passive:true });
     setTimeout(openCover, 900);
 
-    // Parallax & reveal
+    // Parallax & reveal (disable for reduced motion)
     const hero=document.getElementById('hero-bg');
-    if(hero) window.addEventListener('scroll',()=>{ const y=window.scrollY*.25; hero.style.transform=`translate3d(0,${y}px,0)`; },{passive:true});
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(hero && !prefersReduced) window.addEventListener('scroll',()=>{ const y=window.scrollY*.25; hero.style.transform=`translate3d(0,${y}px,0)`; },{passive:true});
     const io=new IntersectionObserver(ents=>{ents.forEach(e=>{if(e.isIntersecting) e.target.classList.add('show');});},{threshold:.15});
     document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   </script>
@@ -323,15 +348,15 @@
         ]);
 
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-		const firebaseConfig = {
-		  apiKey: "AIzaSyBA4RTN8dLxXI2SPP6zTcUIWumb0mqYUgU",
-		  authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
-		  projectId: "thiep-cuoi-c3d08",
-		  storageBucket: "thiep-cuoi-c3d08.firebasestorage.app",
-		  messagingSenderId: "221614290",
-		  appId: "1:221614290:web:a3db7a997326b19b3a9d0b",
-		  measurementId: "G-WECWPY5END"
-		};
+        const firebaseConfig = {
+          apiKey: "AIzaSyBA4RTN8dLxXI2SPP6zTcUIWumb0mqYUgU",
+          authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
+          projectId: "thiep-cuoi-c3d08",
+          storageBucket: "thiep-cuoi-c3d08.firebasestorage.app",
+          messagingSenderId: "221614290",
+          appId: "1:221614290:web:a3db7a997326b19b3a9d0b",
+          measurementId: "G-WECWPY5END"
+        };
         const app = initializeApp(firebaseConfig);
         const db  = getFirestore(app);
 
@@ -418,7 +443,7 @@
                                 <p class="${isHidden?'line-through text-coffee-500/60':''}">${d.message||''}</p>
                                 <p class="text-xs text-coffee-600/70 mt-1">${when}</p>
                               </div>
-                              <button data-id="${id}" data-hide="${!isHidden}" class="px-3 py-1 rounded-md border ${isHidden?'bg-green-50 border-green-300 text-green-700':'bg-rose-50 border-rose-300 text-rose-700'}">
+                              <button data-id="${id}" data-hide="${!isHidden}" class="px-3 py-1 rounded-md border ${isHidden?'bg-green-50 border-green-300 text-green-700':'bg-rose-50 border-rose-300 text-rose-700'} tappable">
                                 ${isHidden?'Hiện':'Ẩn'}
                               </button>`;
                 list.appendChild(li);
@@ -439,10 +464,11 @@
         function tick(){
           const now=Date.now(), d=Math.max(0,target-now);
           const days=Math.floor(d/864e5), hours=Math.floor(d/36e5)%24, mins=Math.floor(d/6e4)%60, secs=Math.floor(d/1e3)%60;
-          document.getElementById('days').textContent=days;
-          document.getElementById('hours').textContent=hours.toString().padStart(2,'0');
-          document.getElementById('mins').textContent=mins.toString().padStart(2,'0');
-          document.getElementById('secs').textContent=secs.toString().padStart(2,'0');
+          const $ = (id) => document.getElementById(id);
+          $('days').textContent=days;
+          $('hours').textContent=hours.toString().padStart(2,'0');
+          $('mins').textContent=mins.toString().padStart(2,'0');
+          $('secs').textContent=secs.toString().padStart(2,'0');
         }
         tick(); setInterval(tick,1000);
         document.getElementById('current-year').textContent=new Date().getFullYear();
@@ -483,4 +509,3 @@
 
 </body>
 </html>
-
