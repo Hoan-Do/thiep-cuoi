@@ -45,32 +45,33 @@
     .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
     .reveal.show{opacity:1;transform:none}
 
-    /* ===== ENVELOPE COVER ===== */
+    /* ========= ENVELOPE COVER ========= */
     #cover{position:fixed;inset:0;z-index:70;pointer-events:auto;background:#7e1f24}
+    /* full red, no gold borders */
     #cover .side{position:absolute;top:0;bottom:0;width:50%;background:#7e1f24;
-      transition:transform 2.2s cubic-bezier(.17,.84,.26,1)}
-    #cover .left{left:0;border-right:2px solid rgba(225,194,133,.8)}
-    #cover .right{right:0;border-left:2px solid rgba(225,194,133,.8)}
+      transition:transform 1.9s cubic-bezier(.19,1,.22,1)}
+    #cover .left{left:0}
+    #cover .right{right:0}
     #cover.opened .left{transform:translateX(-100%)}
     #cover.opened .right{transform:translateX(100%)}
-    #cover .card{
-      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-      width:min(88vw,420px);height:min(86vh,760px);
-      border:3px solid #e1c285;border-radius:10px;overflow:hidden;background:#f8f4ef;
-      box-shadow:0 30px 80px rgba(0,0,0,.35);
-      transition:opacity .75s .8s,transform .8s .75s;display:grid;place-items:center
+    /* Double-happiness seal */
+    #cover .seal{
+      position:absolute;left:50%;bottom:30%;
+      transform:translate(-50%,50%);
+      width:128px;height:128px;border-radius:999px;
+      background: radial-gradient(60% 60% at 30% 30%, #cc8b5a, #8a5630 70%);
+      box-shadow: inset 0 8px 18px rgba(255,255,255,.25), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
+      display:grid;place-items:center;
+      transition: transform 1.9s cubic-bezier(.19,1,.22,1);
     }
-    #cover .card-inner{position:relative;width:100%;height:100%;
-      background-image:var(--invite-image, url('https://images.unsplash.com/photo-1520614073990-dd602f64d05d?q=80&w=1260&auto=format&fit=crop'));
-      background-size:cover;background-position:center;filter:contrast(.95) brightness(.95)
-    }
-    #cover .seal{position:absolute;left:50%;bottom:28%;transform:translate(-50%,50%);
-      width:120px;height:120px;border-radius:999px;background:radial-gradient(60% 60% at 30% 30%,#cc8b5a,#8a5630 70%);
-      border:4px solid #caa36e;box-shadow:inset 0 8px 18px rgba(255,255,255,.25),inset 0 -8px 18px rgba(0,0,0,.28),0 12px 26px rgba(0,0,0,.45)
-    }
-    #cover .seal-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:999px;opacity:.92;mix-blend-mode:multiply}
-    #cover.opened .card{opacity:0;transform:translate(-50%,-52%) scale(.96)}
-    #cover .hint{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.18);padding:.4rem .8rem;border-radius:12px;font-size:.9rem;letter-spacing:.06em}
+    .seal svg{width:70%;height:70%}
+    #cover.opened .seal{transform:translate(calc(50vw - 50%),50%) rotate(6deg)}
+    #cover .card{display:none}
+    #cover .hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.18);padding:.4rem .8rem;border-radius:12px;font-size:.9rem;letter-spacing:.06em;opacity:.9}
+
+    /* ======== APP fade-in after open ======== */
+    #app{opacity:0;filter:blur(2px);transform:translateY(6px);transition:opacity .7s ease, filter .7s ease, transform .7s ease}
+    #app.visible{opacity:1;filter:none;transform:none}
 
     /* ===== LIGHTBOX ===== */
     .lb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:60}
@@ -83,187 +84,169 @@
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
 
-  <!-- ===== ENVELOPE (overlays everything, then biến mất) ===== -->
+  <!-- ========= ENVELOPE (pure red, split, with 囍 seal) ========= -->
   <div id="cover" class="select-none">
     <div class="side left"></div>
     <div class="side right"></div>
-    <div class="card">
-      <div class="card-inner"></div>
-      <div class="seal"><img id="seal-img" class="seal-img" alt="Wax seal"></div>
+
+    <div class="seal" aria-label="Niêm phong">
+      <svg viewBox="0 0 256 256" fill="#4b2a17">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f6d9a5"/>
+            <stop offset="1" stop-color="#c99f5f"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#g)" d="M32 48h80v24H56v16h56v24H56v16h56v24H32v-24h8v-16h-8v-24h8V88h-8V64h8V48Zm112 0h80v24h-56v16h56v24h-56v16h56v24h-80v-24h8v-16h-8v-24h8V88h-8V64h8V48Z"/>
+      </svg>
     </div>
-    <div class="hint">Thiệp sẽ mở tự động • chạm để mở ngay</div>
+
+    <div class="hint">Chạm để mở thiệp</div>
   </div>
 
-  <!-- ===== MUSIC: auto play + mute toggle ===== -->
+  <!-- ===== MUSIC: will start when envelope opens, with mute toggle ===== -->
   <button id="music-btn" class="fixed bottom-4 right-4 z-50 rounded-full bg-coffee-900 text-white w-12 h-12 grid place-items-center shadow-lg opacity-90 hover:opacity-100" aria-label="Tắt/Bật tiếng">
     <svg id="icon-sound-on"  xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3zM16.5 12a4.5 4.5 0 01-2.12 3.84l1.06 1.82A6.5 6.5 0 0018.5 12a6.5 6.5 0 00-3.06-5.66l-1.06 1.82A4.5 4.5 0 0116.5 12z"/></svg>
     <svg id="icon-sound-off" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12a4.5 4.5 0 01-2.12 3.84l1.06 1.82A6.5 6.5 0 0018.5 12a6.5 6.5 0 00-3.06-5.66l-1.06 1.82A4.5 4.5 0 0116.5 12z"/><path d="M3 10v4h4l5 5V5L7 10H3zM19 8l-2 2m0 4l2 2"/></svg>
   </button>
   <audio id="bgm" preload="auto" playsinline></audio>
 
-  <!-- ===== HERO ===== -->
-  <header id="home" class="relative min-h-[88svh] grid place-items-center overflow-hidden">
-    <div class="absolute inset-0 bg-hero bg-cover bg-center will-change-transform" id="hero-bg"></div>
-    <div class="absolute inset-0 bg-coffee-900/55"></div>
-    <div class="relative z-10 text-center px-6 py-24">
-      <p class="font-script text-4xl sm:text-5xl text-white/90 reveal">Thiệp Mời</p>
-      <h1 class="font-display tracking-widest text-white text-5xl sm:text-7xl md:text-8xl mt-2 reveal">VĂN HOÀN</h1>
-      <p class="text-4xl md:text-5xl font-script text-rosey -mt-2 md:-mt-3 reveal">&</p>
-      <h2 class="font-display tracking-widest text-white text-4xl sm:text-6xl md:text-7xl reveal">NGỌC HUYỀN</h2>
-      <p id="guest-line" class="mt-5 text-white/95 reveal">Trân trọng kính mời <span id="guest-name-display" class="font-semibold"></span></p>
-      <div class="mt-8 inline-flex gap-3 reveal">
-        <a href="#timeline" class="px-5 py-2 rounded-full bg-white/90 hover:bg-white text-coffee-900 font-semibold shadow-md">Xem lịch</a>
-        <a href="#guestbook" class="px-5 py-2 rounded-full border border-white/70 text-white/95 hover:bg-white/10">Gửi lời chúc</a>
+  <div id="app">
+    <header id="home" class="relative min-h-[88svh] grid place-items-center overflow-hidden">
+      <div class="absolute inset-0 bg-hero bg-cover bg-center will-change-transform" id="hero-bg"></div>
+      <div class="absolute inset-0 bg-coffee-900/55"></div>
+      <div class="relative z-10 text-center px-6 py-24">
+        <p class="font-script text-4xl sm:text-5xl text-white/90 reveal">Thiệp Mời</p>
+        <h1 class="font-display tracking-widest text-white text-5xl sm:text-7xl md:text-8xl mt-2 reveal">VĂN HOÀN</h1>
+        <p class="text-4xl md:text-5xl font-script text-rosey -mt-2 md:-mt-3 reveal">&</p>
+        <h2 class="font-display tracking-widest text-white text-4xl sm:text-6xl md:text-7xl reveal">NGỌC HUYỀN</h2>
+        <p id="guest-line" class="mt-5 text-white/95 reveal">Trân trọng kính mời <span id="guest-name-display" class="font-semibold"></span></p>
+        <div class="mt-8 inline-flex gap-3 reveal">
+          <a href="#timeline" class="px-5 py-2 rounded-full bg-white/90 hover:bg-white text-coffee-900 font-semibold shadow-md">Xem lịch</a>
+          <a href="#guestbook" class="px-5 py-2 rounded-full border border-white/70 text-white/95 hover:bg-white/10">Gửi lời chúc</a>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- ===== NAV ===== -->
-  <nav class="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-coffee-200">
-    <div class="max-w-6xl mx-auto px-4 py-2 flex items-center gap-6 text-sm">
-      <a href="#timeline" class="hover:text-coffee-700">Lịch trình</a>
-      <a href="#countdown" class="hover:text-coffee-700">Đếm ngược</a>
-      <a href="#gallery" class="hover:text-coffee-700">Album</a>
-      <a href="#guestbook" class="hover:text-coffee-700">Sổ lưu bút</a>
-      <a href="#qr" class="hover:text-coffee-700">QR</a>
-      <span class="ml-auto text-coffee-700/80">26.10.2025</span>
-    </div>
-  </nav>
+    <nav class="sticky top-0 z-40 bg-white/85 backdrop-blur border-b border-coffee-200">
+      <div class="max-w-6xl mx-auto px-4 py-2 flex items-center gap-6 text-sm">
+        <a href="#timeline" class="hover:text-coffee-700">Lịch trình</a>
+        <a href="#countdown" class="hover:text-coffee-700">Đếm ngược</a>
+        <a href="#gallery" class="hover:text-coffee-700">Album</a>
+        <a href="#guestbook" class="hover:text-coffee-700">Sổ lưu bút</a>
+        <a href="#qr" class="hover:text-coffee-700">QR</a>
+        <span class="ml-auto text-coffee-700/80">26.10.2025</span>
+      </div>
+    </nav>
 
-  <!-- ===== TIMELINE ===== -->
-  <section id="timeline" class="max-w-5xl mx-auto px-4 py-14">
-    <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">Lịch trình ngày cưới</h3>
-    <div class="mt-10 relative">
-      <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] bg-coffee-300 hidden md:block"></div>
-      <div class="md:grid md:grid-cols-2 items-center gap-8 mb-10">
-        <div class="md:text-right md:pr-10">
-          <div class="inline-block section-frame px-5 py-4 reveal">
-            <p class="uppercase tracking-widest text-coffee-600 text-xs">Lễ Thành Hôn</p>
-            <p class="font-serif text-2xl font-bold text-coffee-800">09:00 — 26/10/2025</p>
-            <p class="text-coffee-800/90">Tại nhà trai</p>
-            <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" href="https://maps.google.com">Xem bản đồ</a>
+    <section id="timeline" class="max-w-5xl mx-auto px-4 py-14">
+      <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">Lịch trình ngày cưới</h3>
+      <div class="mt-10 relative">
+        <div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] bg-coffee-300 hidden md:block"></div>
+        <div class="md:grid md:grid-cols-2 items-center gap-8 mb-10">
+          <div class="md:text-right md:pr-10">
+            <div class="inline-block section-frame px-5 py-4 reveal">
+              <p class="uppercase tracking-widest text-coffee-600 text-xs">Lễ Thành Hôn</p>
+              <p class="font-serif text-2xl font-bold text-coffee-800">09:00 — 26/10/2025</p>
+              <p class="text-coffee-800/90">Tại nhà trai</p>
+              <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" href="https://maps.google.com">Xem bản đồ</a>
+            </div>
+          </div>
+          <div class="relative hidden md:block">
+            <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-coffee-600 border-4 border-coffee-100"></div>
           </div>
         </div>
-        <div class="relative hidden md:block">
-          <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-coffee-600 border-4 border-coffee-100"></div>
-        </div>
-      </div>
-      <div class="md:grid md:grid-cols-2 items-center gap-8 mb-10">
-        <div class="relative order-2 md:order-1 hidden md:block">
-          <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-coffee-600 border-4 border-coffee-100"></div>
-        </div>
-        <div class="md:pl-10 order-1 md:order-2">
-          <div class="inline-block section-frame px-5 py-4 reveal">
-            <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
-            <p class="font-serif text-2xl font-bold text-coffee-800">18:00 — 26/10/2025</p>
-            <p class="text-coffee-800/90">Nhà hàng ABC</p>
-            <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" href="https://maps.google.com">Xem bản đồ</a>
+        <div class="md:grid md:grid-cols-2 items-center gap-8 mb-10">
+          <div class="relative order-2 md:order-1 hidden md:block">
+            <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-coffee-600 border-4 border-coffee-100"></div>
+          </div>
+          <div class="md:pl-10 order-1 md:order-2">
+            <div class="inline-block section-frame px-5 py-4 reveal">
+              <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
+              <p class="font-serif text-2xl font-bold text-coffee-800">18:00 — 26/10/2025</p>
+              <p class="text-coffee-800/90">Nhà hàng ABC</p>
+              <a class="inline-block mt-2 text-rosey font-semibold hover:underline" target="_blank" href="https://maps.google.com">Xem bản đồ</a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== COUNTDOWN ===== -->
-  <section id="countdown" class="bg-white/70">
-    <div class="max-w-6xl mx-auto px-4 py-14 text-center">
-      <h3 class="font-serif text-3xl font-bold text-coffee-700 reveal">Đếm ngược tới ngày vui</h3>
-      <div id="counter" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
-        <div class="section-frame py-6 reveal"><div id="days"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Ngày</div></div>
-        <div class="section-frame py-6 reveal"><div id="hours" class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giờ</div></div>
-        <div class="section-frame py-6 reveal"><div id="mins"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Phút</div></div>
-        <div class="section-frame py-6 reveal"><div id="secs"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giây</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== STORY ===== -->
-  <!-- <section class="max-w-6xl mx-auto px-4 py-14">
-    <div class="section-frame overflow-hidden reveal">
-      <img src="https://images.unsplash.com/photo-1519741229575-3b66ef1cb8a0?q=80&w=1480&auto=format&fit=crop" alt="Couple banner" class="w-full h-[320px] object-cover">
-      <div class="p-6 md:p-8 grid md:grid-cols-2 gap-6 items-center">
-        <div class="reveal">
-          <h3 class="font-serif text-2xl font-bold text-coffee-700">Câu chuyện của chúng tôi</h3>
-          <p class="mt-2 text-coffee-800/90 leading-relaxed">Chúng tôi gặp nhau trong một chiều mùa thu ấm áp... và hành trình yêu thương cứ thế tiếp nối bằng những điều giản dị.</p>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <img class="rounded-xl shadow reveal" src="https://placehold.co/600x400/e7d7c6/5b3b22?text=Khoảnh+khắc+1" alt="">
-          <img class="rounded-xl shadow reveal" src="https://placehold.co/600x400/e7d7c6/5b3b22?text=Khoảnh+khắc+2" alt="">
-          <img class="rounded-xl shadow reveal" src="https://placehold.co/600x400/e7d7c6/5b3b22?text=Khoảnh+khắc+3" alt="">
-          <img class="rounded-xl shadow reveal" src="https://placehold.co/600x400/e7d7c6/5b3b22?text=Khoảnh+khắc+4" alt="">
+    <section id="countdown" class="bg-white/70">
+      <div class="max-w-6xl mx-auto px-4 py-14 text-center">
+        <h3 class="font-serif text-3xl font-bold text-coffee-700 reveal">Đếm ngược tới ngày vui</h3>
+        <div id="counter" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
+          <div class="section-frame py-6 reveal"><div id="days"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Ngày</div></div>
+          <div class="section-frame py-6 reveal"><div id="hours" class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giờ</div></div>
+          <div class="section-frame py-6 reveal"><div id="mins"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Phút</div></div>
+          <div class="section-frame py-6 reveal"><div id="secs"  class="text-4xl font-serif font-bold"></div><div class="text-xs mt-1">Giây</div></div>
         </div>
       </div>
-    </div>
-  </section> -->
+    </section>
 
-  <!-- ===== GALLERY (Lightbox) ===== -->
-  <section id="gallery" class="bg-white/70">
-    <div class="max-w-6xl mx-auto px-4 py-14">
-      <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">Album ảnh cưới</h3>
-      <div id="gallery-grid" class="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <img src="image/95H03597.JPG" data-full="image/95H03597.JPG" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+2" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+2" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+3" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+3" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+4" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+4" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+5" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+5" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+6" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+6" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+7" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+7" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-        <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+8" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+8" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== GUESTBOOK (Firestore) ===== -->
-  <section id="guestbook" class="max-w-6xl mx-auto px-4 py-14">
-    <div class="grid md:grid-cols-2 gap-6">
-      <div class="section-frame p-6 reveal">
-        <h3 class="font-serif text-2xl font-bold text-coffee-700">Sổ lưu bút & lời chúc</h3>
-        <form class="mt-4" onsubmit="event.preventDefault(); submitGuestbook();">
-          <label class="text-sm">Tên của bạn</label>
-          <input id="guest-name" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5" required />
-          <label class="text-sm block mt-3">Lời chúc</label>
-          <textarea id="guest-message" rows="4" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5" required></textarea>
-          <button class="mt-3 w-full rounded-lg bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-2.5">Gửi lời chúc</button>
-          <p id="form-status" class="text-sm mt-2"></p>
-        </form>
-        <p class="text-xs text-coffee-500 mt-4">User ID: <span id="user-id">N/A</span></p>
-      </div>
-
-      <div class="section-frame p-0 overflow-hidden reveal">
-        <div class="px-6 pt-6">
-          <h4 class="font-serif text-xl font-bold text-coffee-700">Lời chúc từ bạn bè</h4>
-          <p class="text-sm text-coffee-700/80">Các lời chúc mới nhất sẽ hiện lên ngay tại đây 💌</p>
-        </div>
-        <div class="divider my-4"></div>
-        <ul id="guestbook-list" class="px-6 pb-6 max-h-[520px] overflow-auto"></ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== QR ===== -->
-  <section id="qr" class="bg-white/70">
-    <div class="max-w-6xl mx-auto px-4 py-14">
-      <!-- <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">QR tiện dụng</h3> -->
-      <div class="mt-8 grid sm:grid-cols-2 gap-6">
-        <div class="section-frame p-6 text-center reveal">
-          <h4 class="font-serif text-xl font-semibold text-coffee-800">Địa điểm</h4>
-          <p class="text-sm text-coffee-700/80">Quét để mở Google Maps</p>
-          <img class="mx-auto my-4 w-44 h-44" alt="QR bản đồ"
-               src="https://chart.googleapis.com/chart?cht=qr&chs=240x240&chl=https%3A%2F%2Fmaps.google.com%2F" />
-          <a target="_blank" href="https://maps.google.com" class="inline-block px-4 py-2 rounded-md bg-coffee-900 text-white hover:bg-coffee-800">Mở bản đồ</a>
-        </div>
-        <div class="section-frame p-6 text-center reveal">
-          <h4 class="font-serif text-xl font-semibold text-coffee-800">Chia sẻ thiệp</h4>
-          <p class="text-sm text-coffee-700/80">Quét để mở thiệp này</p>
-          <img class="mx-auto my-4 w-44 h-44" alt="QR thiệp"
-               src="https://chart.googleapis.com/chart?cht=qr&chs=240x240&chl=https%3A%2F%2Fhoan-do.github.io%2Fthiep-cuoi%2F" />
-          <a target="_blank" href="https://hoan-do.github.io/thiep-cuoi/" class="inline-block px-4 py-2 rounded-md bg-coffee-900 text-white hover:bg-coffee-800">Mở thiệp</a>
+    <section id="gallery" class="bg-white/70">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <h3 class="font-serif text-3xl font-bold text-center text-coffee-700 reveal">Album ảnh cưới</h3>
+        <div id="gallery-grid" class="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <img src="image/95H03597.JPG" data-full="image/95H03597.JPG" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+2" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+2" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+3" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+3" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+4" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+4" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+5" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+5" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+6" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+6" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+7" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+7" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
+          <img src="https://placehold.co/800x1000/ede3d7/8b5e3c?text=Ảnh+8" data-full="https://placehold.co/1600x2000/ede3d7/5b3b22?text=Ảnh+8" class="rounded-xl shadow-frame object-cover w-full h-72 cursor-zoom-in reveal" alt="">
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== ADMIN BAR / LOGIN / PANEL (giữ nguyên logic ẩn/hiện) ===== -->
+    <section id="guestbook" class="max-w-6xl mx-auto px-4 py-14">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="section-frame p-6 reveal">
+          <h3 class="font-serif text-2xl font-bold text-coffee-700">Sổ lưu bút & lời chúc</h3>
+          <form class="mt-4" onsubmit="event.preventDefault(); submitGuestbook();">
+            <label class="text-sm">Tên của bạn</label>
+            <input id="guest-name" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5" required />
+            <label class="text-sm block mt-3">Lời chúc</label>
+            <textarea id="guest-message" rows="4" class="mt-1 w-full rounded-lg border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-rosey/60 p-2.5" required></textarea>
+            <button class="mt-3 w-full rounded-lg bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-2.5">Gửi lời chúc</button>
+            <p id="form-status" class="text-sm mt-2"></p>
+          </form>
+          <p class="text-xs text-coffee-500 mt-4">User ID: <span id="user-id">N/A</span></p>
+        </div>
+        <div class="section-frame p-0 overflow-hidden reveal">
+          <div class="px-6 pt-6">
+            <h4 class="font-serif text-xl font-bold text-coffee-700">Lời chúc từ bạn bè</h4>
+            <p class="text-sm text-coffee-700/80">Các lời chúc mới nhất sẽ hiện lên ngay tại đây 💌</p>
+          </div>
+          <div class="divider my-4"></div>
+          <ul id="guestbook-list" class="px-6 pb-6 max-h-[520px] overflow-auto"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="qr" class="bg-white/70">
+      <div class="max-w-6xl mx-auto px-4 py-14">
+        <div class="mt-8 grid sm:grid-cols-2 gap-6">
+          <div class="section-frame p-6 text-center reveal">
+            <h4 class="font-serif text-xl font-semibold text-coffee-800">Địa điểm</h4>
+            <p class="text-sm text-coffee-700/80">Quét để mở Google Maps</p>
+            <img class="mx-auto my-4 w-44 h-44" alt="QR bản đồ"
+              src="https://chart.googleapis.com/chart?cht=qr&chs=240x240&chl=https%3A%2F%2Fmaps.google.com%2F" />
+            <a target="_blank" href="https://maps.google.com" class="inline-block px-4 py-2 rounded-md bg-coffee-900 text-white hover:bg-coffee-800">Mở bản đồ</a>
+          </div>
+          <div class="section-frame p-6 text-center reveal">
+            <h4 class="font-serif text-xl font-semibold text-coffee-800">Chia sẻ thiệp</h4>
+            <p class="text-sm text-coffee-700/80">Quét để mở thiệp này</p>
+            <img class="mx-auto my-4 w-44 h-44" alt="QR thiệp"
+              src="https://chart.googleapis.com/chart?cht=qr&chs=240x240&chl=https%3A%2F%2Fhoan-do.github.io%2Fthiep-cuoi%2F" />
+            <a target="_blank" href="https://hoan-do.github.io/thiep-cuoi/" class="inline-block px-4 py-2 rounded-md bg-coffee-900 text-white hover:bg-coffee-800">Mở thiệp</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <div id="admin-bar" class="hidden fixed top-0 left-0 right-0 bg-coffee-900 text-white text-sm px-3 py-2 flex items-center justify-between z-50">
     <span id="admin-info">Chế độ quản trị</span>
     <div class="flex items-center gap-2">
@@ -299,43 +282,28 @@
     <p>&copy; <span id="current-year"></span> Văn Hoàn & Ngọc Huyền. All rights reserved.</p>
   </footer>
 
-  <!-- ===== APP SCRIPT ===== -->
   <script type="module">
-    /* ---------- Firebase ---------- */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY",
-      authDomain: "thiep-cuoi-c3d08.firebaseapp.com",
-      projectId: "thiep-cuoi-c3d08",
-      storageBucket: "thiep-cuoi-c3d08.appspot.com",
-      messagingSenderId: "221614290",
-      appId: "1:221614290:web:a3db7a9973261b9b3a0d8b"
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBA68TNBDx4T23PfkZTcU1RwWmDeQUgY", authDomain: "thiep-cuoi-c3d08.firebaseapp.com", projectId: "thiep-cuoi-c3d08", storageBucket: "thiep-cuoi-c3d08.appspot.com", messagingSenderId: "221614290", appId: "1:221614290:web:a3db7a9973261b9b3a0d8b" };
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
 
-    /* ---------- Guest name in hero ---------- */
     const params = new URLSearchParams(location.search);
     const nameTo = params.get("to");
-    if (nameTo) { const el=document.getElementById('guest-name-display'); if(el) el.textContent=decodeURIComponent(nameTo); }
-    else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
+    if (nameTo) { const el=document.getElementById('guest-name-display'); if(el) el.textContent=decodeURIComponent(nameTo); } else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
 
-    /* ---------- Guestbook submit ---------- */
     window.submitGuestbook = async () => {
       const name=(document.getElementById('guest-name').value||'').trim();
       const message=(document.getElementById('guest-message').value||'').trim();
       const status=document.getElementById('form-status');
       if(!name||!message){ status.textContent="Vui lòng nhập đầy đủ thông tin."; status.className="text-red-600 mt-2"; return; }
-      try{
-        await addDoc(collection(db,'guestbook'),{name,message,createdAt:serverTimestamp(),hidden:false});
+      try{ await addDoc(collection(db,'guestbook'),{name,message,createdAt:serverTimestamp(),hidden:false});
         document.getElementById('guest-name').value=""; document.getElementById('guest-message').value="";
         status.textContent="Đã gửi lời chúc thành công!"; status.className="text-green-600 mt-2";
       }catch(e){ console.error(e); status.textContent="Gửi thất bại, vui lòng thử lại."; status.className="text-red-600 mt-2"; }
     };
 
-    /* ---------- Public render ---------- */
     const qPublic=query(collection(db,'guestbook'),orderBy('createdAt','desc'));
     onSnapshot(qPublic,(snap)=>{
       const list=document.getElementById('guestbook-list'); if(!list) return; list.innerHTML="";
@@ -350,84 +318,16 @@
       });
     });
 
-    /* ---------- Admin mode ---------- */
-    const isAdmin=params.get('admin')==='true';
-    if(isAdmin){
-      const { getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,getIdToken,sendEmailVerification,reload } =
-        await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-      const auth=getAuth(app);
-      const loginBox=document.getElementById('admin-login-box');
-      const adminBar=document.getElementById('admin-bar');
-      const adminPanel=document.getElementById('admin-panel');
-      const info=document.getElementById('admin-info');
-      const uidPlace=document.getElementById('user-id');
-
-      document.getElementById('admin-login-form').addEventListener('submit',async(e)=>{
-        e.preventDefault();
-        const email=document.getElementById('admin-email').value.trim();
-        const pass=document.getElementById('admin-password').value;
-        const msg=document.getElementById('admin-login-msg');
-        msg.textContent="Đang đăng nhập...";
-        try{ await signInWithEmailAndPassword(auth,email,pass); msg.textContent=""; }
-        catch(err){ console.error(err); msg.textContent="Đăng nhập thất bại. Kiểm tra email/mật khẩu."; msg.className="text-red-600 mt-2 text-center"; }
-      });
-      document.getElementById('btn-logout').addEventListener('click',()=>signOut(auth));
-      document.getElementById('btn-resend').addEventListener('click',async()=>{ if(!auth.currentUser) return; await sendEmailVerification(auth.currentUser); alert("Đã gửi email xác minh."); });
-      document.getElementById('btn-refresh').addEventListener('click',async()=>{ if(!auth.currentUser) return; await reload(auth.currentUser); await getIdToken(auth.currentUser,true); updateUI(auth.currentUser); });
-
-      function updateUI(user){
-        if(user){ uidPlace.textContent=user.uid; adminBar.classList.remove('hidden'); loginBox.classList.add('hidden');
-          info.textContent=`Đang đăng nhập: ${user.email||''} — Verified: ${user.emailVerified?'YES':'NO'}`;
-          if(['hoandovan370@gmail.com'].includes(user.email||'')){ adminPanel.classList.remove('hidden'); bindAdminList(); }
-          else adminPanel.classList.add('hidden');
-        }else{ uidPlace.textContent='N/A'; adminBar.classList.add('hidden'); loginBox.classList.remove('hidden'); adminPanel.classList.add('hidden'); }
-      }
-
-      function bindAdminList(){
-        const q=query(collection(db,'guestbook'),orderBy('createdAt','desc'));
-        onSnapshot(q,(snap)=>{
-          const list=document.getElementById('pending-list'); list.innerHTML="";
-          snap.forEach(docSnap=>{
-            const d=docSnap.data(); const id=docSnap.id;
-            const when=d.createdAt?.toDate?d.createdAt.toDate().toLocaleString('vi-VN'):"";
-            const isHidden=d.hidden===true;
-            const li=document.createElement('li');
-            li.className="p-4 rounded-xl border bg-white flex items-start justify-between gap-4";
-            li.innerHTML=`<div>
-                            <p class="font-semibold ${isHidden?'line-through text-coffee-500/60':''}">${d.name||''}</p>
-                            <p class="${isHidden?'line-through text-coffee-500/60':''}">${d.message||''}</p>
-                            <p class="text-xs text-coffee-600/70 mt-1">${when}</p>
-                          </div>
-                          <button data-id="${id}" data-hide="${!isHidden}" class="px-3 py-1 rounded-md border ${isHidden?'bg-green-50 border-green-300 text-green-700':'bg-rose-50 border-rose-300 text-rose-700'}">
-                            ${isHidden?'Hiện':'Ẩn'}
-                          </button>`;
-            list.appendChild(li);
-          });
-        });
-        document.getElementById('pending-list').addEventListener('click',async(e)=>{
-          const btn=e.target.closest('button[data-id]'); if(!btn) return;
-          const id=btn.getAttribute('data-id'); const hide=btn.getAttribute('data-hide')==='true';
-          try{ if(auth.currentUser) await getIdToken(auth.currentUser,true); await updateDoc(doc(db,'guestbook',id),{hidden:!!hide}); }
-          catch(err){ console.error(err); alert("Không thể cập nhật. Kiểm tra Rules & email admin."); }
-        });
-      }
-      onAuthStateChanged(auth,updateUI);
-    }
-
-    /* ---------- Countdown ---------- */
-    const target=new Date('2025-10-25T09:00:00+07:00').getTime();
-    function tick(){
-      const now=Date.now(), d=Math.max(0,target-now);
+    const target=new Date('2025-10-26T09:00:00+07:00').getTime();
+    function tick(){ const now=Date.now(), d=Math.max(0,target-now);
       const days=Math.floor(d/864e5), hours=Math.floor(d/36e5)%24, mins=Math.floor(d/6e4)%60, secs=Math.floor(d/1e3)%60;
       document.getElementById('days').textContent=days;
       document.getElementById('hours').textContent=hours.toString().padStart(2,'0');
       document.getElementById('mins').textContent=mins.toString().padStart(2,'0');
-      document.getElementById('secs').textContent=secs.toString().padStart(2,'0');
-    }
+      document.getElementById('secs').textContent=secs.toString().padStart(2,'0'); }
     tick(); setInterval(tick,1000);
     document.getElementById('current-year').textContent=new Date().getFullYear();
 
-    /* ---------- Music (autoplay + mute) ---------- */
     const DEFAULT_MUSIC="https://cdn.pixabay.com/download/audio/2022/04/05/audio_987b1b0d2d.mp3?filename=romantic-ambient-112996.mp3";
     const audio=document.getElementById('bgm');
     const musicParam=params.get('music');
@@ -435,38 +335,29 @@
     const icoOn=document.getElementById('icon-sound-on'); const icoOff=document.getElementById('icon-sound-off');
     function setMuted(m){ audio.muted=m; (m?icoOn.classList.add('hidden'):icoOn.classList.remove('hidden')); (m?icoOff.classList.remove('hidden'):icoOff.classList.add('hidden')); try{localStorage.setItem('wedding-muted',m?'1':'0')}catch{} }
     try{ setMuted(localStorage.getItem('wedding-muted')==='1'); }catch{ setMuted(false); }
-    async function tryPlay(){
-      try{ await audio.play(); }
-      catch(e){
-        const wasMuted=audio.muted; audio.muted=true;
-        try{ await audio.play(); }catch{}
-        const unlock=()=>{ if(!wasMuted){ audio.muted=false; setMuted(false);} window.removeEventListener('click',unlock); window.removeEventListener('touchstart',unlock); };
+    document.getElementById('music-btn').addEventListener('click',async()=>{ setMuted(!audio.muted); if(audio.paused){ try{ await audio.play(); }catch{} } });
+
+    const cover=document.getElementById('cover');
+    const app=document.getElementById('app');
+    const openCover=async()=>{
+      if(cover.classList.contains('opened')) return;
+      cover.classList.add('opened');
+      try{ await audio.play(); }catch(e){
+        const unlock=async()=>{ try{ await audio.play(); }catch{} window.removeEventListener('click',unlock); window.removeEventListener('touchstart',unlock); };
         window.addEventListener('click',unlock,{once:true,passive:true});
         window.addEventListener('touchstart',unlock,{once:true,passive:true});
       }
-    }
-    tryPlay();
-    document.getElementById('music-btn').addEventListener('click',()=>setMuted(!audio.muted));
+      app.classList.add('visible');
+      setTimeout(()=>{ cover.style.display='none'; }, 1950);
+    };
+    cover.addEventListener('click', openCover, { passive:true });
+    setTimeout(openCover, 900);
 
-    /* ---------- Envelope open ---------- */
-    const INVITE_IMAGE_URL="https://images.unsplash.com/photo-1520614073990-dd602f64d05d?q=80&w=1260&auto=format&fit=crop";
-    const SEAL_IMAGE_URL="https://images.unsplash.com/photo-1591893502434-581c8e98f3a3?q=80&w=640&auto=format&fit=crop";
-    document.querySelector('#cover .card-inner').style.setProperty('--invite-image',`url('${INVITE_IMAGE_URL}')`);
-    document.getElementById('seal-img').src=SEAL_IMAGE_URL;
-
-    const cover=document.getElementById('cover');
-    const openCover=()=>{ if(cover.classList.contains('opened')) return;
-      cover.classList.add('opened'); setTimeout(()=>{ cover.style.display='none'; },2300); };
-    setTimeout(openCover,900);           // tự mở sau 0.9s
-    cover.addEventListener('click',openCover,{passive:true}); // chạm để mở ngay
-
-    /* ---------- Parallax & reveal ---------- */
     const hero=document.getElementById('hero-bg');
     window.addEventListener('scroll',()=>{ const y=window.scrollY*.25; hero.style.transform=`translate3d(0,${y}px,0)`; },{passive:true});
     const io=new IntersectionObserver(ents=>{ents.forEach(e=>{if(e.isIntersecting) e.target.classList.add('show');});},{threshold:.15});
     document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-    /* ---------- Lightbox for gallery ---------- */
     const grid=document.getElementById('gallery-grid');
     const sources=Array.from(grid.querySelectorAll('img')).map(img=>img.getAttribute('data-full')||img.src);
     let idx=0,startX=0;
