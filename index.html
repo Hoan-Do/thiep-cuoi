@@ -44,7 +44,12 @@
     .reveal.show{opacity:1;transform:none}
 
     /* Hiển thị nội dung ngay sau cover để thấy dần khi tách */
-    #app{opacity:1; filter:none; transform:none;}
+    #app {
+	  opacity: 1 !important;
+	  filter: none !important;
+	  transform: none !important;
+	  display: block !important;
+	}
 
     /* ========= COVER: màn đỏ tách đôi + seal 囍 ========= */
     #cover{position:fixed;inset:0;z-index:70;pointer-events:auto;}
