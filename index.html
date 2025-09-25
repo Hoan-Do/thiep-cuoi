@@ -368,8 +368,6 @@
 	const doorR  = document.querySelector('#cover .doorR, #cover .right'); // tuỳ bạn dùng class nào
     audio.src=musicParam?decodeURIComponent(musicParam):DEFAULT_MUSIC;
     const icoOn=document.getElementById('icon-sound-on'); const icoOff=document.getElementById('icon-sound-off');
-    function setMuted(m){ audio.muted=m; (m?icoOn.classList.add('hidden'):icoOn.classList.remove('hidden')); (m?icoOff.classList.remove('hidden'):icoOff.classList.add('hidden')); try{localStorage.setItem('wedding-muted',m?'1':'0')}catch{} }
-    try{ setMuted(localStorage.getItem('wedding-muted')==='1'); }catch{ setMuted(false); }
     document.getElementById('music-btn').addEventListener('click',async()=>{ setMuted(!audio.muted); if(audio.paused){ try{ await audio.play(); }catch{} } });
     audio.addEventListener('error',()=>{ try{ if(audio.currentSrc.indexOf('pixabay.com')===-1){ audio.src=FALLBACK_MUSIC; audio.play().catch(()=>{}); } }catch(e){} });
 
