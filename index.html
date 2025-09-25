@@ -63,9 +63,20 @@
 	  display:grid; grid-template-columns:1fr 1fr;
 	  contain:layout size paint;
 	}
-	.door{ position:relative; overflow:hidden; background:#7e1f24; will-change:transform; }
-	.doorL{ transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:1; }
-	.doorR{ transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:2; }
+	.door{ position:relative; background:#7e1f24; will-change:transform; }
+	/* Cánh trái vẫn ẩn phần tràn để không lộ mép */
+	.doorL{ overflow:hidden; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:1; }
+	/* Cánh phải cho tràn để seal không bị cắt */
+	.doorR{ overflow:visible; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:2; }
+
+	/* Mép giữa dưới seal (giữ nguyên) */
+	.doorL::after, .doorR::before{ content:""; position:absolute; top:0; bottom:0; width:20px; pointer-events:none; z-index:5; }
+	.doorL::after{ right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
+	.doorR::before{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
+
+	/* Seal vẫn là con của .doorR và có z-index cao hơn */
+	.seal{ z-index:20; /* các thuộc tính khác giữ nguyên */ }
+
 
 	/* Mép giữa (seam) – dưới seal */
 	.doorL::after, .doorR::before{
