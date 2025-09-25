@@ -380,17 +380,64 @@
 	const cover = document.getElementById('cover');
 	const doorR = document.querySelector('#cover .doorR');
 
+	// Cập nhật --vh như bạn đã có
+	function setVH(){ const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', vh + 'px'); }
+	setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
+
+	const cover = document.getElementById('cover');
+	const doorR  = document.querySelector('#cover .doorR, #cover .right'); // tuỳ bạn dùng class nào
+	const audio  = document.getElementById('bgm');
+	const icoOn  = document.getElementById('icon-sound-on');
+	const icoOff = document.getElementById('icon-sound-off');
+
+	function setMuted(m){
+	  if(!audio) return;
+	  audio.muted = m;
+	  if(icoOn && icoOff){
+		if(m){ icoOn.classList.add('hidden'); icoOff.classList.remove('hidden'); }
+		else { icoOn.classList.remove('hidden'); icoOff.classList.add('hidden'); }
+	  }
+	  try{ localStorage.setItem('wedding-muted', m ? '1' : '0'); }catch{}
+	}
+
+	async function autoPlayOnce(){
+	  if(!audio) return;
+	  // Chỉ auto play 1 lần mỗi lần mở trang
+	  if (sessionStorage.getItem('autoPlayed') === '1') return;
+	  sessionStorage.setItem('autoPlayed', '1');
+
+	  // đảm bảo có src & không mute
+	  try{ if(!audio.src) audio.load(); }catch{}
+	  setMuted(false);
+	  audio.volume = 1;
+	  try {
+		// iOS an toàn hơn nếu reset currentTime ngay trước khi play
+		if (audio.currentTime === 0) { try{ audio.currentTime = 0; }catch{} }
+		await audio.play();
+	  } catch(e) {
+		// nếu file lỗi 404 hoặc bị chặn, bạn có thể gán fallback tại đây
+		console.warn('Autoplay failed, will retry after transition', e);
+	  }
+	}
+
 	const openCover = () => {
 	  if (!cover || cover.classList.contains('opened')) return;
+
+	  // >>> phát nhạc NGAY trong thao tác chạm
+	  autoPlayOnce();
+
 	  cover.classList.add('opened');
-	  cover.style.pointerEvents = 'none';        // cho phép tương tác nội dung ngay
+	  cover.style.pointerEvents = 'none';
+
 	  const onEnd = (e) => {
 		if (e.propertyName !== 'transform') return;
-		try { cover.remove(); } catch { cover.style.display = 'none'; }
+		try{ cover.remove(); }catch{ cover.style.display = 'none'; }
 	  };
-	  doorR && doorR.addEventListener('transitionend', onEnd, { once:true });
+	  if (doorR) doorR.addEventListener('transitionend', onEnd, { once:true });
 	};
-	cover && cover.addEventListener('click', openCover, { passive:true });
+
+	if (cover) cover.addEventListener('click', openCover, { passive:true });
+
 
 	
   </script>
