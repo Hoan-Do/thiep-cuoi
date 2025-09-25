@@ -53,14 +53,14 @@
       display: block !important;
     }
 
-    /* ========= COVER: màn đỏ tách đôi + seal 囍 (seal gắn vào cánh phải) ========= */
+    /* ========= COVER: màn đỏ tách đôi + seal 囍 dính cánh phải ========= */
     :root{
-      --door-ms: 4s;   /* thời gian trượt của 2 cánh */
+      --door-ms: 1.3s; /* thời gian trượt của 2 cánh */
     }
 
     #cover{
       position:fixed; inset:0; z-index:70; pointer-events:auto;
-      background: transparent; /* để thấy nội dung phía sau khi màn bắt đầu tách */
+      background: transparent; /* để thấy nội dung sau khi màn bắt đầu tách */
     }
 
     /* Hai cánh màn */
@@ -68,11 +68,7 @@
       position:absolute; top:0; bottom:0; width:50%; background:#7e1f24;
     }
     #cover .left{ left:0;  transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
-    #cover .right{
-      right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);
-      position:relative; /* để chứa seal */
-      overflow:visible;
-    }
+    #cover .right{ right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); position:relative; }
 
     /* Bóng cạnh trong để có chiều sâu */
     #cover .left::after,
@@ -82,17 +78,18 @@
     #cover .left::after{  right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
     #cover .right::after{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
 
-    /* Seal 囍: là con của .right, nhưng căn đúng giữa màn hình (mép trái của .right = trục giữa) */
+    /* Seal 囍 đặt bên TRONG cánh phải, canh giữa toàn màn hình khi đóng */
     #cover .right .seal{
-      position:absolute; left:0; top:50%;
-      transform:translate(-50%,-50%); /* kéo nửa ra phía trái để tâm đúng giữa màn */
+      position:absolute;
+      left:0;                  /* mép trong của cánh phải (chính là tâm màn hình) */
+      top:50%;
+      transform:translate(-50%,-50%); /* đẩy tâm seal khớp tâm màn */
       width:128px; height:128px; border-radius:999px;
       background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
       box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
       display:grid; place-items:center;
-      z-index:71;
-      transition: opacity .6s ease calc(var(--door-ms) - .3s); /* mờ dần gần cuối khi cánh sắp mở xong */
-      will-change: opacity;
+      z-index:1;               /* nằm trên cánh phải */
+      transition: opacity .6s ease calc(var(--door-ms) - .1s); /* mờ nhẹ gần cuối */
     }
     #cover .right .seal .xi{
       font-family:'Noto Serif SC', serif; font-weight:900; font-size:84px;
@@ -101,10 +98,10 @@
       filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
     }
 
-    /* Khi mở: hai cánh trượt ra; seal đi THEO cánh phải (không transform riêng) và mờ dần */
+    /* Khi mở: hai cánh trượt ra; seal đi THEO cánh phải */
     #cover.opened .left{  transform:translateX(-100%); }
     #cover.opened .right{ transform:translateX(100%);  }
-    #cover.opened .right .seal{ opacity:0; }
+    #cover.opened .right .seal{ opacity:0; } /* có/không cũng được; để lại cho mềm */
 
     /* Gợi ý chạm */
     #cover .hint{
@@ -126,6 +123,7 @@
     #actionbar svg{width:22px;height:22px;flex-shrink:0}
     body{padding-bottom:calc(64px + var(--sab));}
 
+    /* Helpers */
     .no-scrollbar::-webkit-scrollbar{ display:none; } .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
     .tappable{ touch-action: manipulation; } :focus-visible{ outline:3px solid #8b5e3c; outline-offset:2px; border-radius:10px; }
 
@@ -140,7 +138,7 @@
   <div id="cover" class="select-none">
     <div class="side left"></div>
     <div class="side right">
-      <!-- Seal gắn liền cánh phải -->
+      <!-- SEAL dính vào cánh phải -->
       <div class="seal" aria-label="Niêm phong"><span class="xi" aria-hidden="true">囍</span></div>
     </div>
     <div class="hint">Chạm để mở thiệp</div>
@@ -153,7 +151,7 @@
   </button>
   <audio id="bgm" preload="auto" playsinline></audio>
 
-  <!-- ========= BOTTOM ACTION BAR ========= -->
+  <!-- ========= BOTTOM ACTION BAR (tuỳ chọn) ========= -->
   <nav id="actionbar" class="sm:hidden">
     <div class="max-w-6xl mx-auto flex">
       <a href="#home" class="ab-item" data-target="home" aria-label="Trang chủ">
@@ -252,16 +250,16 @@
       <section id="gallery" class="scroll-mt-24">
         <div class="section-card p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Album ảnh cưới</h3>
-          <div id="gallery-grid" class="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 1">
-            <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 2">
-            <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 3">
-            <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 4">
-            <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 5">
-            <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
-            <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
-            <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
-          </div>
+        <div id="gallery-grid" class="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 1">
+          <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 2">
+          <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 3">
+          <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 4">
+          <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 5">
+          <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
+          <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
+          <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
+        </div>
         </div>
       </section>
 
@@ -364,32 +362,30 @@
     document.getElementById('music-btn').addEventListener('click',async()=>{ setMuted(!audio.muted); if(audio.paused){ try{ await audio.play(); }catch{} } });
     audio.addEventListener('error',()=>{ try{ if(audio.currentSrc.indexOf('pixabay.com')===-1){ audio.src=FALLBACK_MUSIC; audio.play().catch(()=>{}); } }catch(e){} });
 
-    // COVER open on tap (no auto open)
+    // COVER open on tap (seal dính cánh phải)
     const cover = document.getElementById('cover');
-    const right = document.querySelector('#cover .right');
+    const rightDoor = document.querySelector('#cover .right');
 
     const openCover = () => {
       if (!cover || cover.classList.contains('opened')) return;
       cover.classList.add('opened');
 
-      // Cho người dùng tương tác nội dung phía sau ngay lập tức
+      // Cho người dùng chạm vào nội dung phía sau ngay lập tức
       cover.style.pointerEvents = 'none';
 
-      // Khi cánh phải kết thúc transform (sau --door-ms), fade & remove cover
+      // Khi cánh phải trượt xong (transitionend transform), fade & remove cover
       const onEnd = (e) => {
         if (e.propertyName !== 'transform') return;
         cover.style.opacity = '0';
         setTimeout(() => {
           try { cover.remove(); } catch { cover.style.display = 'none'; }
-        }, 400);
-        right.removeEventListener('transitionend', onEnd);
+        }, 350);
+        rightDoor.removeEventListener('transitionend', onEnd);
       };
-      if (right) right.addEventListener('transitionend', onEnd);
-
-      // phát nhạc nếu được
-      audio.play().catch(()=>{});
+      if (rightDoor) rightDoor.addEventListener('transitionend', onEnd);
     };
 
+    // Chỉ mở khi CHẠM
     if (cover) cover.addEventListener('click', openCover, { passive: true });
   </script>
 
