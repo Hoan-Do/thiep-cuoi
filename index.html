@@ -44,82 +44,79 @@
     .reveal.show{opacity:1;transform:none}
 
     /* đảm bảo nội dung luôn nổi và hiển thị */
-	#app{
-	  position: relative;
-	  z-index: 1;
-	  opacity: 1 !important;
-	  filter: none !important;
-	  transform: none !important;
-	  display: block !important;
-	}
+    #app{
+      position: relative;
+      z-index: 1;
+      opacity: 1 !important;
+      filter: none !important;
+      transform: none !important;
+      display: block !important;
+    }
 
-    /* ========= COVER: màn đỏ tách đôi + seal 囍 ========= */
-	:root{
-	  --door-ms: 4s;   /* thời gian trượt của 2 cánh */
-	  --seal-ms: 4s;   /* thời gian seal chạy (chậm hơn) */
-	}
+    /* ========= COVER: màn đỏ tách đôi + seal 囍 (seal gắn vào cánh phải) ========= */
+    :root{
+      --door-ms: 4s;   /* thời gian trượt của 2 cánh */
+    }
 
-	#cover{
-	  position:fixed; inset:0; z-index:70; pointer-events:auto;
-	  background: transparent; /* để thấy nội dung sau khi màn bắt đầu tách */
-	}
+    #cover{
+      position:fixed; inset:0; z-index:70; pointer-events:auto;
+      background: transparent; /* để thấy nội dung phía sau khi màn bắt đầu tách */
+    }
 
-	/* Hai cánh màn */
-	#cover .side{
-	  position:absolute; top:0; bottom:0; width:50%; background:#7e1f24;
-	}
-	#cover .left{ left:0;  transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
-	#cover .right{ right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
+    /* Hai cánh màn */
+    #cover .side{
+      position:absolute; top:0; bottom:0; width:50%; background:#7e1f24;
+    }
+    #cover .left{ left:0;  transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
+    #cover .right{
+      right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);
+      position:relative; /* để chứa seal */
+      overflow:visible;
+    }
 
-	/* Bóng cạnh trong để có chiều sâu */
-	#cover .left::after,
-	#cover .right::after{
-	  content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none;
-	}
-	#cover .left::after{  right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
-	#cover .right::after{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
+    /* Bóng cạnh trong để có chiều sâu */
+    #cover .left::after,
+    #cover .right::after{
+      content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none;
+    }
+    #cover .left::after{  right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
+    #cover .right::after{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
 
-	/* Seal 囍 chính giữa */
-	#cover .seal{
-	  position:absolute; left:50%; top:50%;
-	  transform:translate(-50%,-50%);
-	  width:128px; height:128px; border-radius:999px;
-	  background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
-	  box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
-	  display:grid; place-items:center;
-	  will-change: transform, opacity;
-	  transition:
-		transform var(--seal-ms) cubic-bezier(.19,1,.22,1),
-		opacity .8s ease calc(var(--seal-ms) - .6s);
-	  z-index:71;
-	}
-	#cover .seal .xi{
-	  font-family:'Noto Serif SC', serif; font-weight:900; font-size:84px;
-	  background:linear-gradient(#f6d9a5,#c99f5f);
-	  -webkit-background-clip:text; background-clip:text; color:transparent;
-	  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
-	}
+    /* Seal 囍: là con của .right, nhưng căn đúng giữa màn hình (mép trái của .right = trục giữa) */
+    #cover .right .seal{
+      position:absolute; left:0; top:50%;
+      transform:translate(-50%,-50%); /* kéo nửa ra phía trái để tâm đúng giữa màn */
+      width:128px; height:128px; border-radius:999px;
+      background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
+      box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
+      display:grid; place-items:center;
+      z-index:71;
+      transition: opacity .6s ease calc(var(--door-ms) - .3s); /* mờ dần gần cuối khi cánh sắp mở xong */
+      will-change: opacity;
+    }
+    #cover .right .seal .xi{
+      font-family:'Noto Serif SC', serif; font-weight:900; font-size:84px;
+      background:linear-gradient(#f6d9a5,#c99f5f);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
+    }
 
-	/* Khi mở: hai cánh trượt ra; seal đi theo 1 bên rồi mờ */
-	#cover.opened .left{  transform:translateX(-100%); }
-	#cover.opened .right{ transform:translateX(100%);  }
-	/* seal sang PHẢI, nghiêng nhẹ, sau đó mờ */
-	#cover.opened .seal{ transform:translate(120%, -50%) rotate(6deg); opacity:0; }
+    /* Khi mở: hai cánh trượt ra; seal đi THEO cánh phải (không transform riêng) và mờ dần */
+    #cover.opened .left{  transform:translateX(-100%); }
+    #cover.opened .right{ transform:translateX(100%);  }
+    #cover.opened .right .seal{ opacity:0; }
 
-	/* Gợi ý chạm */
-	#cover .hint{
-	  position:absolute; left:50%; bottom:calc(18px + var(--sab));
-	  transform:translateX(-50%);
-	  color:#fff; background:rgba(0,0,0,.2);
-	  padding:.5rem .85rem; border-radius:12px; font-size:.9rem; letter-spacing:.06em; opacity:.95;
-	  transition: opacity .3s ease;
-	}
-	#cover.opened .hint{ opacity:0; }
+    /* Gợi ý chạm */
+    #cover .hint{
+      position:absolute; left:50%; bottom:calc(18px + var(--sab));
+      transform:translateX(-50%);
+      color:#fff; background:rgba(0,0,0,.2);
+      padding:.5rem .85rem; border-radius:12px; font-size:.9rem; letter-spacing:.06em; opacity:.95;
+      transition: opacity .3s ease;
+    }
+    #cover.opened .hint{ opacity:0; }
 
-	
-	
-
-    /* ===== Bottom Action Bar (nếu bạn đang dùng) ===== */
+    /* ===== Bottom Action Bar ===== */
     #actionbar{position:fixed;left:0;right:0;bottom:0;z-index:50;
       background:rgba(255,255,255,.92);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);
       border-top:1px solid #e6d5c3; padding-bottom:calc(8px + var(--sab));
@@ -129,12 +126,11 @@
     #actionbar svg{width:22px;height:22px;flex-shrink:0}
     body{padding-bottom:calc(64px + var(--sab));}
 
-    /* Helpers */
     .no-scrollbar::-webkit-scrollbar{ display:none; } .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
     .tappable{ touch-action: manipulation; } :focus-visible{ outline:3px solid #8b5e3c; outline-offset:2px; border-radius:10px; }
 
     @media (prefers-reduced-motion: reduce){
-      #cover .left, #cover .right, #cover .seal{ transition:none !important; }
+      #cover .left, #cover .right{ transition:none !important; }
     }
   </style>
 </head>
@@ -143,11 +139,12 @@
   <!-- ========= COVER (chạm để mở) ========= -->
   <div id="cover" class="select-none">
     <div class="side left"></div>
-    <div class="side right"></div>
-    <div class="seal" aria-label="Niêm phong"><span class="xi" aria-hidden="true">囍</span></div>
+    <div class="side right">
+      <!-- Seal gắn liền cánh phải -->
+      <div class="seal" aria-label="Niêm phong"><span class="xi" aria-hidden="true">囍</span></div>
+    </div>
     <div class="hint">Chạm để mở thiệp</div>
   </div>
-
 
   <!-- ===== MUSIC TOGGLE ===== -->
   <button id="music-btn" class="fixed z-40 rounded-full bg-coffee-900 text-white w-12 h-12 grid place-items-center shadow-lg opacity-90 hover:opacity-100 tappable" style="right:1rem; bottom: calc(80px + var(--sab));" aria-label="Tắt/Bật tiếng">
@@ -156,7 +153,7 @@
   </button>
   <audio id="bgm" preload="auto" playsinline></audio>
 
-  <!-- ========= BOTTOM ACTION BAR (tuỳ chọn) ========= -->
+  <!-- ========= BOTTOM ACTION BAR ========= -->
   <nav id="actionbar" class="sm:hidden">
     <div class="max-w-6xl mx-auto flex">
       <a href="#home" class="ab-item" data-target="home" aria-label="Trang chủ">
@@ -255,16 +252,16 @@
       <section id="gallery" class="scroll-mt-24">
         <div class="section-card p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Album ảnh cưới</h3>
-        <div id="gallery-grid" class="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 1">
-          <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 2">
-          <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 3">
-          <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 4">
-          <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 5">
-          <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
-          <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
-          <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
-        </div>
+          <div id="gallery-grid" class="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 1">
+            <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 2">
+            <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 3">
+            <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 4">
+            <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 5">
+            <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
+            <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
+            <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
+          </div>
         </div>
       </section>
 
@@ -369,32 +366,31 @@
 
     // COVER open on tap (no auto open)
     const cover = document.getElementById('cover');
-	const seal  = document.querySelector('#cover .seal');
+    const right = document.querySelector('#cover .right');
 
-	const openCover = () => {
-	  if (!cover || cover.classList.contains('opened')) return;
-	  cover.classList.add('opened');
+    const openCover = () => {
+      if (!cover || cover.classList.contains('opened')) return;
+      cover.classList.add('opened');
 
-	  // Cho người dùng chạm vào nội dung phía sau ngay lập tức
-	  cover.style.pointerEvents = 'none';
+      // Cho người dùng tương tác nội dung phía sau ngay lập tức
+      cover.style.pointerEvents = 'none';
 
-	  // Khi seal kết thúc chuyển động transform (sau --seal-ms),
-	  // mới fade-out rồi remove cover để không cắt ngang animation
-	  const onEnd = (e) => {
-		if (e.propertyName !== 'transform') return;
-		cover.style.opacity = '0';
-		setTimeout(() => {
-		  try { cover.remove(); } catch { cover.style.display = 'none'; }
-		}, 400);
-		seal.removeEventListener('transitionend', onEnd);
-	  };
-	  if (seal) seal.addEventListener('transitionend', onEnd);
-	};
+      // Khi cánh phải kết thúc transform (sau --door-ms), fade & remove cover
+      const onEnd = (e) => {
+        if (e.propertyName !== 'transform') return;
+        cover.style.opacity = '0';
+        setTimeout(() => {
+          try { cover.remove(); } catch { cover.style.display = 'none'; }
+        }, 400);
+        right.removeEventListener('transitionend', onEnd);
+      };
+      if (right) right.addEventListener('transitionend', onEnd);
 
-	// Chỉ mở khi CHẠM
-	if (cover) cover.addEventListener('click', openCover, { passive: true });
+      // phát nhạc nếu được
+      audio.play().catch(()=>{});
+    };
 
-
+    if (cover) cover.addEventListener('click', openCover, { passive: true });
   </script>
 
   <!-- ========= SCRIPT 2: App content (Firestore + countdown + gallery lightbox + bottom bar active) ========= -->
@@ -578,23 +574,20 @@
           entries.forEach(ent=>{ if(ent.isIntersecting){ const id=ent.target.id; setTimeout(()=>setActive(id), 60);} });
         },{root:null, threshold:0.6, rootMargin:"-20% 0px -20% 0px"});
         targets.forEach(sec=>activeObs.observe(sec));
-		
-		// Reveal on scroll (hiển thị dần các phần .reveal)
-		const revObs = new IntersectionObserver((entries) => {
-		  entries.forEach((ent) => {
-			if (ent.isIntersecting) {
-			  ent.target.classList.add('show');
-			  revObs.unobserve(ent.target);
-			}
-		  });
-		}, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
 
-		document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
-
-		// Fallback cho trình duyệt cũ: nếu không hỗ trợ IO thì hiện luôn
-		if (!('IntersectionObserver' in window)) {
-		  document.querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
-		}
+        // Reveal on scroll
+        const revObs = new IntersectionObserver((entries) => {
+          entries.forEach((ent) => {
+            if (ent.isIntersecting) {
+              ent.target.classList.add('show');
+              revObs.unobserve(ent.target);
+            }
+          });
+        }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
+        document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
+        if (!('IntersectionObserver' in window)) {
+          document.querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
+        }
 
       } catch (err) {
         console.warn('[App init warning]', err);
