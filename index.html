@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Hoàn & Huyền — Thiệp Cưới</title>
-  <meta name="description" content="Thiệp cưới online phong cách mộc nâu — hiệu ứng mở màn tách đôi & seal di chuyển" />
+  <meta name="description" content="Thiệp cưới online — hiệu ứng mở màn tách đôi, seal dính theo cánh phải" />
 
   <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,102 +43,68 @@
     .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
     .reveal.show{opacity:1;transform:none}
 
-    /* đảm bảo nội dung luôn nổi và hiển thị */
-    #app{
-      position: relative;
-      z-index: 1;
-      opacity: 1 !important;
-      filter: none !important;
-      transform: none !important;
-      display: block !important;
-    }
+    /* đảm bảo nội dung luôn hiển thị sẵn phía sau cover */
+    #app{position:relative;z-index:1;opacity:1!important;filter:none!important;transform:none!important;display:block!important}
 
-    /* ========= COVER: màn đỏ tách đôi + seal 囍 dính cánh phải ========= */
-    :root{
-      --door-ms: 1.3s; /* thời gian trượt của 2 cánh */
-    }
+    /* ========= COVER: hai cánh + seal 囍 dính vào cánh phải ========= */
+    :root{ --door-ms: 1.6s; } /* chỉnh tốc độ 2 cánh ở đây */
 
-    #cover{
-      position:fixed; inset:0; z-index:70; pointer-events:auto;
-      background: transparent; /* để thấy nội dung sau khi màn bắt đầu tách */
-    }
+    #cover{position:fixed;inset:0;z-index:70;pointer-events:auto;background:transparent}
 
-    /* Hai cánh màn */
-    #cover .side{
-      position:absolute; top:0; bottom:0; width:50%; background:#7e1f24;
-    }
-    #cover .left{ left:0;  transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
-    #cover .right{ right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); position:relative; }
+    /* cánh chia nửa màn hình chắc chắn 50/50 */
+    #cover .side{position:absolute;top:0;bottom:0;background:#7e1f24;box-sizing:border-box}
+    #cover .left {left:0;  right:50%;transform:translateX(0);transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);z-index:1}
+    #cover .right{left:50%;right:0;  transform:translateX(0);transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);z-index:2;position:relative}
 
-    /* Bóng cạnh trong để có chiều sâu */
-    #cover .left::after,
-    #cover .right::after{
-      content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none;
-    }
-    #cover .left::after{  right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
-    #cover .right::after{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
+    #cover .left::after,#cover .right::after{content:'';position:absolute;top:0;bottom:0;width:20px;pointer-events:none}
+    #cover .left::after {right:-1px;background:linear-gradient(90deg,rgba(0,0,0,.18),transparent)}
+    #cover .right::after{left:-1px;background:linear-gradient(270deg,rgba(0,0,0,.18),transparent)}
 
-    /* Seal 囍 đặt bên TRONG cánh phải, canh giữa toàn màn hình khi đóng */
+    /* seal là CON của .right; tâm đặt đúng trục giữa màn hình */
     #cover .right .seal{
-      position:absolute;
-      left:0;                  /* mép trong của cánh phải (chính là tâm màn hình) */
-      top:50%;
-      transform:translate(-50%,-50%); /* đẩy tâm seal khớp tâm màn */
-      width:128px; height:128px; border-radius:999px;
+      position:absolute;left:0;top:50%;transform:translate(-50%,-50%);
+      width:128px;height:128px;border-radius:999px;
       background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
       box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
-      display:grid; place-items:center;
-      z-index:1;               /* nằm trên cánh phải */
-      transition: opacity .6s ease calc(var(--door-ms) - .1s); /* mờ nhẹ gần cuối */
+      display:grid;place-items:center;z-index:3;
+      transition:opacity .5s ease calc(var(--door-ms) - .2s); /* mờ gần cuối */
+      will-change:opacity;
     }
     #cover .right .seal .xi{
-      font-family:'Noto Serif SC', serif; font-weight:900; font-size:84px;
-      background:linear-gradient(#f6d9a5,#c99f5f);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-      filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
+      font-family:'Noto Serif SC',serif;font-weight:900;font-size:84px;
+      background:linear-gradient(#f6d9a5,#c99f5f);-webkit-background-clip:text;background-clip:text;color:transparent;
+      filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));user-select:none
     }
 
-    /* Khi mở: hai cánh trượt ra; seal đi THEO cánh phải */
-    #cover.opened .left{  transform:translateX(-100%); }
-    #cover.opened .right{ transform:translateX(100%);  }
-    #cover.opened .right .seal{ opacity:0; } /* có/không cũng được; để lại cho mềm */
+    /* khi mở */
+    #cover.opened .left {transform:translateX(-100%)}
+    #cover.opened .right{transform:translateX(100%)}
+    #cover.opened .right .seal{opacity:0}
 
-    /* Gợi ý chạm */
+    /* gợi ý chạm */
     #cover .hint{
-      position:absolute; left:50%; bottom:calc(18px + var(--sab));
-      transform:translateX(-50%);
-      color:#fff; background:rgba(0,0,0,.2);
-      padding:.5rem .85rem; border-radius:12px; font-size:.9rem; letter-spacing:.06em; opacity:.95;
-      transition: opacity .3s ease;
+      position:absolute;left:50%;bottom:calc(18px + var(--sab));transform:translateX(-50%);
+      color:#fff;background:rgba(0,0,0,.2);padding:.5rem .85rem;border-radius:12px;font-size:.9rem;letter-spacing:.06em;opacity:.95;transition:opacity .3s ease
     }
-    #cover.opened .hint{ opacity:0; }
+    #cover.opened .hint{opacity:0}
 
-    /* ===== Bottom Action Bar ===== */
-    #actionbar{position:fixed;left:0;right:0;bottom:0;z-index:50;
-      background:rgba(255,255,255,.92);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);
-      border-top:1px solid #e6d5c3; padding-bottom:calc(8px + var(--sab));
-    }
-    #actionbar a{flex:1 1 0; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 6px 8px; color:#5b3b22}
-    #actionbar a.active{color:#8b5e3c; font-weight:700}
-    #actionbar svg{width:22px;height:22px;flex-shrink:0}
-    body{padding-bottom:calc(64px + var(--sab));}
+    /* bottom action bar */
+    #actionbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.92);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);border-top:1px solid #e6d5c3;padding-bottom:calc(8px + var(--sab))}
+    #actionbar a{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 8px;color:#5b3b22}
+    #actionbar a.active{color:#8b5e3c;font-weight:700}
+    #actionbar svg{width:22px;height:22px}
+    body{padding-bottom:calc(64px + var(--sab))}
 
-    /* Helpers */
-    .no-scrollbar::-webkit-scrollbar{ display:none; } .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
-    .tappable{ touch-action: manipulation; } :focus-visible{ outline:3px solid #8b5e3c; outline-offset:2px; border-radius:10px; }
-
-    @media (prefers-reduced-motion: reduce){
-      #cover .left, #cover .right{ transition:none !important; }
-    }
+    .tappable{touch-action:manipulation}
+    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
   </style>
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
 
-  <!-- ========= COVER (chạm để mở) ========= -->
+  <!-- ========= COVER ========= -->
   <div id="cover" class="select-none">
     <div class="side left"></div>
     <div class="side right">
-      <!-- SEAL dính vào cánh phải -->
       <div class="seal" aria-label="Niêm phong"><span class="xi" aria-hidden="true">囍</span></div>
     </div>
     <div class="hint">Chạm để mở thiệp</div>
@@ -151,38 +117,23 @@
   </button>
   <audio id="bgm" preload="auto" playsinline></audio>
 
-  <!-- ========= BOTTOM ACTION BAR (tuỳ chọn) ========= -->
+  <!-- ========= BOTTOM ACTION BAR ========= -->
   <nav id="actionbar" class="sm:hidden">
     <div class="max-w-6xl mx-auto flex">
-      <a href="#home" class="ab-item" data-target="home" aria-label="Trang chủ">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 9 7v11h-6v-6H9v6H3V10l9-7z"/></svg>
-        <span class="text-[11px]">Trang chủ</span>
-      </a>
-      <a href="#timeline" class="ab-item" data-target="timeline" aria-label="Lịch trình">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h3V2zm15 8H2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10zM6 14h5v5H6v-5z"/></svg>
-        <span class="text-[11px]">Lịch</span>
-      </a>
-      <a href="#gallery" class="ab-item" data-target="gallery" aria-label="Album">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V7a2 2 0 0 0-2-2H5C3.9 5 3 5.9 3 7v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-        <span class="text-[11px]">Album</span>
-      </a>
-      <a href="#guestbook" class="ab-item" data-target="guestbook" aria-label="Lưu bút">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm13 0v4h4"/></svg>
-        <span class="text-[11px]">Lưu bút</span>
-      </a>
-      <a href="#qr" class="ab-item" data-target="qr" aria-label="QR">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm6 6h10v10H11V11zm2 2v6h6v-6h-6zM3 13h6v2H3v-2zm0 4h4v2H3v-2zm10-8h2v2h-2V9zm4 0h4v2h-4V9z"/></svg>
-        <span class="text-[11px]">QR</span>
-      </a>
+      <a href="#home" class="ab-item" data-target="home" aria-label="Trang chủ"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 9 7v11h-6v-6H9v6H3V10l9-7z"/></svg><span class="text-[11px]">Trang chủ</span></a>
+      <a href="#timeline" class="ab-item" data-target="timeline" aria-label="Lịch trình"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h3V2zm15 8H2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10zM6 14h5v5H6v-5z"/></svg><span class="text-[11px]">Lịch</span></a>
+      <a href="#gallery" class="ab-item" data-target="gallery" aria-label="Album"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V7a2 2 0 0 0-2-2H5C3.9 5 3 5.9 3 7v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span class="text-[11px]">Album</span></a>
+      <a href="#guestbook" class="ab-item" data-target="guestbook" aria-label="Lưu bút"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm13 0v4h4"/></svg><span class="text-[11px]">Lưu bút</span></a>
+      <a href="#qr" class="ab-item" data-target="qr" aria-label="QR"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm6 6h10v10H11V11zm2 2v6h6v-6h-6zM3 13h6v2H3v-2zm0 4h4v2H3v-2zm10-8h2v2h-2V9zm4 0h4v2h-4V9z"/></svg><span class="text-[11px]">QR</span></a>
     </div>
   </nav>
 
   <!-- ========= MAIN CONTENT ========= -->
   <div id="app">
-    <!-- ===== HERO ===== -->
+    <!-- HERO -->
     <section id="home" class="px-3 pt-3">
       <div class="relative overflow-hidden section-card shadow-gentle">
-        <div class="absolute inset-0 bg-hero bg-cover bg-center will-change-transform" id="hero-bg"></div>
+        <div class="absolute inset-0 bg-hero bg-cover bg-center" id="hero-bg"></div>
         <div class="absolute inset-0 bg-coffee-900/60"></div>
         <div class="relative z-10 text-center px-5 py-20">
           <p class="font-script text-3xl text-white/95 reveal">Thiệp Mời</p>
@@ -198,10 +149,8 @@
       </div>
     </section>
 
-    <!-- ===== WRAPPER ===== -->
     <main class="max-w-6xl mx-auto px-3 pb-6 space-y-6 mt-4">
-
-      <!-- Lịch trình -->
+      <!-- Timeline -->
       <section id="timeline" class="scroll-mt-24">
         <div class="section-card p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Lịch trình ngày cưới</h3>
@@ -250,16 +199,16 @@
       <section id="gallery" class="scroll-mt-24">
         <div class="section-card p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Album ảnh cưới</h3>
-        <div id="gallery-grid" class="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 1">
-          <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 2">
-          <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 3">
-          <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 4">
-          <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 5">
-          <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
-          <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
-          <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
-        </div>
+          <div id="gallery-grid" class="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <img src="image/Anh_album_1_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_1_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 1">
+            <img src="image/Anh_album_2_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_2_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 2">
+            <img src="image/Anh_album_3_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_3_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 3">
+            <img src="image/Anh_album_4_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_4_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 4">
+            <img src="image/Anh_album_5_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_5_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 5">
+            <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
+            <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
+            <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-44 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
+          </div>
         </div>
       </section>
 
@@ -296,13 +245,11 @@
           <div class="mt-4 grid sm:grid-cols-2 gap-4 sm:gap-6 items-start">
               <div class="text-center sm:text-left">
                 <h4 class="font-serif text-xl font-semibold text-coffee-800">Đến Chú rể</h4>
-                <img class="mx-auto my-3 sm:my-4 w-44 h-44" alt="QR mừng cưới đến chú rể" loading="lazy" decoding="async"
-                  src="image/QRTKVanHoan.jpg" />
+                <img class="mx-auto my-3 sm:my-4 w-44 h-44" alt="QR mừng cưới đến chú rể" loading="lazy" decoding="async" src="image/QRTKVanHoan.jpg" />
               </div>
               <div class="text-center sm:text-left">
                 <h4 class="font-serif text-xl font-semibold text-coffee-800">Đến Cô dâu</h4>
-                <img class="mx-auto my-3 sm:my-4 w-44 h-44" alt="QR mừng cưới đến cô dâu" loading="lazy" decoding="async"
-                  src="image/QRTKNgocHuyen.jpg" />
+                <img class="mx-auto my-3 sm:my-4 w-44 h-44" alt="QR mừng cưới đến cô dâu" loading="lazy" decoding="async" src="image/QRTKNgocHuyen.jpg" />
               </div>
           </div>
         </div>
@@ -310,7 +257,7 @@
     </main>
   </div>
 
-  <!-- Admin bar + login + panel -->
+  <!-- Admin bar + login -->
   <div id="admin-bar" class="hidden fixed top-0 left-0 right-0 bg-coffee-900 text-white text-sm px-3 py-2 flex items-center justify-between z-50">
     <span id="admin-info">Chế độ quản trị</span>
     <div class="flex items-center gap-2">
@@ -337,7 +284,7 @@
   <section id="admin-panel" class="hidden max-w-6xl mx-auto px-4 py-8">
     <div class="section-card p-6">
       <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Trang quản lý lời chúc</h3>
-      <p class="text-center text-sm text-coffee-700/80">Ẩn/hiện bất kỳ lời chúc nào (cần Rules cho phép cập nhật)</p>
+      <p class="text-center text-sm text-coffee-700/80">Ẩn/hiện lời chúc (cần Rules cho phép cập nhật)</p>
       <ul id="pending-list" class="mt-6 grid gap-3"></ul>
     </div>
   </section>
@@ -362,34 +309,30 @@
     document.getElementById('music-btn').addEventListener('click',async()=>{ setMuted(!audio.muted); if(audio.paused){ try{ await audio.play(); }catch{} } });
     audio.addEventListener('error',()=>{ try{ if(audio.currentSrc.indexOf('pixabay.com')===-1){ audio.src=FALLBACK_MUSIC; audio.play().catch(()=>{}); } }catch(e){} });
 
-    // COVER open on tap (seal dính cánh phải)
+    // Cover open on tap
     const cover = document.getElementById('cover');
-    const rightDoor = document.querySelector('#cover .right');
+    const right = document.querySelector('#cover .right');
 
     const openCover = () => {
       if (!cover || cover.classList.contains('opened')) return;
       cover.classList.add('opened');
+      cover.style.pointerEvents = 'none';      // cho phép tương tác phần sau ngay
 
-      // Cho người dùng chạm vào nội dung phía sau ngay lập tức
-      cover.style.pointerEvents = 'none';
-
-      // Khi cánh phải trượt xong (transitionend transform), fade & remove cover
+      // Khi cánh phải kết thúc transform -> fade & remove cover
       const onEnd = (e) => {
         if (e.propertyName !== 'transform') return;
         cover.style.opacity = '0';
-        setTimeout(() => {
-          try { cover.remove(); } catch { cover.style.display = 'none'; }
-        }, 350);
-        rightDoor.removeEventListener('transitionend', onEnd);
+        setTimeout(()=>{ try{ cover.remove(); }catch{ cover.style.display='none'; } }, 350);
+        right.removeEventListener('transitionend', onEnd);
       };
-      if (rightDoor) rightDoor.addEventListener('transitionend', onEnd);
-    };
+      right.addEventListener('transitionend', onEnd);
 
-    // Chỉ mở khi CHẠM
-    if (cover) cover.addEventListener('click', openCover, { passive: true });
+      audio.play().catch(()=>{});
+    };
+    cover.addEventListener('click', openCover, { passive:true });
   </script>
 
-  <!-- ========= SCRIPT 2: App content (Firestore + countdown + gallery lightbox + bottom bar active) ========= -->
+  <!-- ========= SCRIPT 2: App content, Firestore, countdown, gallery, reveal ========= -->
   <script type="module">
     (async () => {
       try {
@@ -521,10 +464,9 @@
           $('secs').textContent=secs.toString().padStart(2,'0');
         }
         tick(); setInterval(tick,1000);
-
         document.getElementById('current-year').textContent=new Date().getFullYear();
 
-        // Lightbox Album
+        // Lightbox album
         const grid=document.getElementById('gallery-grid');
         if(grid){
           const sources=Array.from(grid.querySelectorAll('img')).map(img=>img.getAttribute('data-full')||img.src);
