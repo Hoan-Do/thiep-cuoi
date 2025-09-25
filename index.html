@@ -43,33 +43,31 @@
     /* ========= COVER ========= */
     #cover{
       position:fixed; inset:0; z-index:70; pointer-events:auto; background:transparent;
-      height:calc(var(--vh) * 100);                /* fallback chắc chắn */
+      height:calc(var(--vh) * 100);                     /* fallback chắc chắn */
     }
     @supports (height: 100svh){ #cover{ height:100svh; } }  /* ưu tiên svh */
     @supports (height: 100dvh){ #cover{ height:100dvh; } }  /* rồi tới dvh */
 
-    /* Hai cánh 50/50 bằng left/right (không dùng 50vw để tránh sai số trên 1 số thiết bị) */
-    #cover .side{
-      position:absolute; top:0; bottom:0; background:#7e1f24; box-sizing:border-box; will-change:transform;
+    /* Hai cánh 50/50 dùng left/right để tránh sai số 50vw */
+    #cover .door{
+      position:absolute; top:0; bottom:0;
+      background:#7e1f24; box-sizing:border-box; will-change:transform;
     }
-    #cover .left  { left:0;   right:50%; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:1; }
-    #cover .right { left:50%; right:0;   transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:2; position:relative; }
+    #cover .door-left  { left:0;   right:50%; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:1;  box-shadow: 1px 0 0 rgba(0,0,0,.20) inset; }
+    #cover .door-right { left:50%; right:0;   transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); z-index:2; position:relative; box-shadow:-1px 0 0 rgba(0,0,0,.20) inset; }
 
-    /* bóng mép cánh */
-    #cover .left::after, #cover .right::after{
+    /* bóng dải mép (thêm chút chiều sâu) */
+    #cover .door-left::after, #cover .door-right::after{
       content:""; position:absolute; top:0; bottom:0; width:20px; pointer-events:none;
     }
-    #cover .left::after  { right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
-    #cover .right::after { left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
+    #cover .door-left::after  { right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
+    #cover .door-right::after { left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
 
-    /* Seal 囍: là con của .right (đi theo cánh phải), nhưng căn đúng tâm màn theo viewport:
-       - ngang: trục giữa trùng với mép trong cánh phải -> left:0; translateX(-50%)
-       - dọc: ưu tiên 50svh/50dvh; fallback var(--vh)*50
-       - có bù safe-area để chuẩn giữa */
-    #cover .right .seal{
+    /* Seal 囍: là CON của .door-right (đi theo cánh phải), căn đúng tâm màn */
+    #cover .door-right .seal{
       position:absolute;
-      left:0;
-      top:calc((var(--vh) * 50) + (var(--sat) - var(--sab))/2);   /* fallback */
+      left:0; /* mép trong cánh phải chính là trục giữa màn */
+      top:calc((var(--vh) * 50) + (var(--sat) - var(--sab))/2);   /* fallback chắc chắn */
       transform:translate(-50%, -50%);
       width:128px; height:128px; border-radius:999px;
       background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
@@ -80,12 +78,12 @@
       /* không fade => seal đi hẳn cùng cánh */
     }
     @supports (height: 100svh){
-      #cover .right .seal{ top: calc(50svh + (var(--sat) - var(--sab))/2); }
+      #cover .door-right .seal{ top: calc(50svh + (var(--sat) - var(--sab))/2); }
     }
     @supports (height: 100dvh){
-      #cover .right .seal{ top: calc(50dvh + (var(--sat) - var(--sab))/2); }
+      #cover .door-right .seal{ top: calc(50dvh + (var(--sat) - var(--sab))/2); }
     }
-    #cover .right .seal .xi{
+    #cover .door-right .seal .xi{
       font-family:'Noto Serif SC',serif; font-weight:900; font-size:84px;
       background:linear-gradient(#f6d9a5,#c99f5f); -webkit-background-clip:text; background-clip:text; color:transparent;
       filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
@@ -93,8 +91,8 @@
     }
 
     /* Mở màn: trái -100%, phải +100%; seal dính cánh phải */
-    #cover.opened .left { transform:translateX(-100%); }
-    #cover.opened .right{ transform:translateX(100%);  }
+    #cover.opened .door-left  { transform:translateX(-100%); }
+    #cover.opened .door-right { transform:translateX(100%);  }
 
     /* Gợi ý chạm */
     #cover .hint{
@@ -120,8 +118,8 @@
 
   <!-- ========= COVER ========= -->
   <div id="cover" class="select-none">
-    <div class="side left"></div>
-    <div class="side right">
+    <div class="door door-left"></div>
+    <div class="door door-right">
       <div class="seal" aria-label="Niêm phong"><span class="xi" aria-hidden="true">囍</span></div>
     </div>
     <div class="hint">Chạm để mở thiệp</div>
@@ -149,7 +147,7 @@
   <div id="app">
     <section id="home" class="px-3 pt-3">
       <div class="relative overflow-hidden section-card shadow-gentle">
-        <div class="absolute inset-0 bg-hero bg-cover bg-center" id="hero-bg"></div>
+        <div class="absolute inset-0 bg-hero bg-cover bg-center"></div>
         <div class="absolute inset-0 bg-coffee-900/60"></div>
         <div class="relative z-10 text-center px-5 py-20">
           <p class="font-script text-3xl text-white/95 reveal">Thiệp Mời</p>
@@ -202,12 +200,11 @@
 
     /* Mở màn khi chạm */
     const cover=document.getElementById('cover');
-    const right=document.querySelector('#cover .right');
+    const right=document.querySelector('#cover .door-right');
     const openCover=()=>{
       if(cover.classList.contains('opened')) return;
       cover.classList.add('opened');
       cover.style.pointerEvents='none';
-      // Gỡ cover khi cánh phải mở xong
       right.addEventListener('transitionend',(e)=>{
         if(e.propertyName!=='transform') return;
         try{ cover.remove(); }catch{ cover.style.display='none'; }
