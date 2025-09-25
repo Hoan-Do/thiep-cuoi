@@ -69,7 +69,8 @@
 	  position:absolute; top:0; bottom:0; width:50%; background:#7e1f24;
 	}
 	#cover .left{ left:0;  transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
-	#cover .right{ right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
+	#cover .right{ right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); position: relative; /* để seal nằm trong */
+}
 
 	/* Bóng cạnh trong để có chiều sâu */
 	#cover .left::after,
@@ -80,31 +81,32 @@
 	#cover .right::after{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
 
 	/* Seal 囍 chính giữa */
-	#cover .seal{
-	  position:absolute; left:50%; top:50%;
+	#cover .seal {
+	  position:absolute;
+	  left:-50%; /* đẩy seal ra giữa màn hình từ cạnh trong của cánh phải */
+	  top:50%;
 	  transform:translate(-50%,-50%);
 	  width:128px; height:128px; border-radius:999px;
 	  background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
-	  box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
+	  box-shadow: inset 0 8px 18px rgba(255,255,255,.24),
+				  inset 0 -8px 18px rgba(0,0,0,.28),
+				  0 12px 26px rgba(0,0,0,.45);
 	  display:grid; place-items:center;
-	  will-change: transform, opacity;
-	  transition:
-		transform var(--seal-ms) cubic-bezier(.19,1,.22,1),
-		opacity .8s ease calc(var(--seal-ms) - .6s);
-	  z-index:71;
+	  transition: opacity .6s ease 1.2s; /* chỉ mờ dần, không transform riêng */
 	}
-	#cover .seal .xi{
-	  font-family:'Noto Serif SC', serif; font-weight:900; font-size:84px;
+	
+	#cover .seal .xi {
+	  font-family:'Noto Serif SC', serif;
+	  font-weight:900; font-size:84px;
 	  background:linear-gradient(#f6d9a5,#c99f5f);
-	  -webkit-background-clip:text; background-clip:text; color:transparent;
-	  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
+	  -webkit-background-clip:text; background-clip:text;
+	  color:transparent;
+	  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
 	}
 
-	/* Khi mở: hai cánh trượt ra; seal đi theo 1 bên rồi mờ */
-	#cover.opened .left{  transform:translateX(-100%); }
-	#cover.opened .right{ transform:translateX(100%);  }
-	/* seal sang PHẢI, nghiêng nhẹ, sau đó mờ */
-	#cover.opened .seal{ transform:translate(120%, -50%) rotate(6deg); opacity:0; }
+	/* Khi mở: cánh phải đi cùng seal */
+	#cover.opened .right { transform:translateX(100%); }
+	#cover.opened .seal { opacity:0; }
 
 	/* Gợi ý chạm */
 	#cover .hint{
@@ -140,13 +142,15 @@
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
 
-  <!-- ========= COVER (chạm để mở) ========= -->
-  <div id="cover" class="select-none">
-    <div class="side left"></div>
-    <div class="side right"></div>
-    <div class="seal" aria-label="Niêm phong"><span class="xi" aria-hidden="true">囍</span></div>
-    <div class="hint">Chạm để mở thiệp</div>
+  <!-- ========= COVER (chạm để mở) ========= --> 
+  <div id="cover">
+	<div class="side left"></div>
+	<div class="side right">
+		<div class="seal"><span class="xi">囍</span></div>
+	</div>
+	  <div class="hint">Chạm để mở thiệp</div>
   </div>
+
 
   <!-- ===== MUSIC TOGGLE ===== -->
   <button id="music-btn" class="fixed z-40 rounded-full bg-coffee-900 text-white w-12 h-12 grid place-items-center shadow-lg opacity-90 hover:opacity-100 tappable" style="right:1rem; bottom: calc(80px + var(--sab));" aria-label="Tắt/Bật tiếng">
