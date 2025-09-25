@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Hoàn & Huyền — Thiệp Cưới</title>
-  <meta name="description" content="Thiệp cưới online — hiệu ứng mở màn tách đôi, seal dính theo cánh phải" />
+  <meta name="description" content="Thiệp cưới online — hiệu ứng mở màn tách đôi, seal dính theo cánh phải, căn giữa tuyệt đối trên mobile" />
 
   <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,23 +46,26 @@
     /* đảm bảo nội dung luôn hiển thị sẵn phía sau cover */
     #app{position:relative;z-index:1;opacity:1!important;filter:none!important;transform:none!important;display:block!important}
 
-    /* ========= COVER: hai cánh + seal 囍 dính vào cánh phải ========= */
+    /* ========= COVER: hai cánh + seal 囍 dính vào cánh phải, căn giữa bằng dvh ========= */
     :root{ --door-ms: 1.6s; } /* chỉnh tốc độ 2 cánh ở đây */
 
-    #cover{position:fixed;inset:0;z-index:70;pointer-events:auto;background:transparent}
+    #cover{
+      position:fixed;inset:0;z-index:70;pointer-events:auto;background:transparent;
+      height:100dvh; /* chiều cao theo visual viewport, fix lệch iOS */
+    }
 
     /* cánh chia nửa màn hình chắc chắn 50/50 */
-    #cover .side{position:absolute;top:0;bottom:0;background:#7e1f24;box-sizing:border-box}
-    #cover .left {left:0;  right:50%;transform:translateX(0);transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);z-index:1}
-    #cover .right{left:50%;right:0;  transform:translateX(0);transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);z-index:2;position:relative}
+    #cover .side{position:absolute;top:0;height:100dvh;background:#7e1f24;box-sizing:border-box}
+    #cover .left {left:0;  width:50vw;transform:translateX(0);transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);z-index:1}
+    #cover .right{right:0; width:50vw;transform:translateX(0);transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1);z-index:2;position:relative}
 
-    #cover .left::after,#cover .right::after{content:'';position:absolute;top:0;bottom:0;width:20px;pointer-events:none}
+    #cover .left::after,#cover .right::after{content:'';position:absolute;top:0;height:100dvh;width:20px;pointer-events:none}
     #cover .left::after {right:-1px;background:linear-gradient(90deg,rgba(0,0,0,.18),transparent)}
     #cover .right::after{left:-1px;background:linear-gradient(270deg,rgba(0,0,0,.18),transparent)}
 
-    /* seal là CON của .right; tâm đặt đúng trục giữa màn hình */
+    /* seal là CON của .right; tâm đặt đúng giữa màn: left = mép trong cánh phải (=50vw), top = 50dvh */
     #cover .right .seal{
-      position:absolute;left:0;top:50%;transform:translate(-50%,-50%);
+      position:absolute; left:0; top:50dvh; transform:translate(-50%, -50%);
       width:128px;height:128px;border-radius:999px;
       background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
       box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
@@ -97,6 +100,12 @@
 
     .tappable{touch-action:manipulation}
     .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+
+    @supports not (height: 100dvh){
+      /* fallback cho trình duyệt cũ */
+      #cover, #cover .side, #cover .right::after, #cover .left::after{ height:100vh; }
+      #cover .right .seal{ top:50vh; } /* nếu không có dvh thì dùng vh */
+    }
   </style>
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
@@ -416,7 +425,8 @@
           function updateUI(user){
             if(user){ uidPlace.textContent=user.uid; adminBar.classList.remove('hidden'); loginBox.classList.add('hidden');
               info.textContent=`Đang đăng nhập: ${user.email||''} — Verified: ${user.emailVerified?'YES':'NO'}`;
-              if(['hoandovan370@gmail.com'].includes(user.email||'')){ adminPanel.classList.remove('hidden'); bindAdminList(); }
+              if(['hoandovan370@gmail.com'].includes(user.email||''))
+                { adminPanel.classList.remove('hidden'); bindAdminList(); }
               else adminPanel.classList.add('hidden');
             }else{ uidPlace.textContent='N/A'; adminBar.classList.add('hidden'); loginBox.classList.remove('hidden'); adminPanel.classList.add('hidden'); }
           }
