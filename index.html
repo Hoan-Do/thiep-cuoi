@@ -104,9 +104,11 @@
 	  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
 	}
 
-	/* Khi mở: cánh phải đi cùng seal */
-	#cover.opened .right { transform:translateX(100%); }
-	#cover.opened .seal { opacity:0; }
+	/* Khi mở: hai cánh trượt ra; seal đi theo 1 bên rồi mờ */
+	#cover.opened .left{  transform:translateX(-100%); }
+	#cover.opened .right{ transform:translateX(100%);  }
+	/* seal sang PHẢI, nghiêng nhẹ, sau đó mờ */
+	#cover.opened .seal{ transform:translate(120%, -50%) rotate(6deg); opacity:0; }
 
 	/* Gợi ý chạm */
 	#cover .hint{
