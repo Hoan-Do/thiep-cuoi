@@ -54,48 +54,70 @@
 	}
 
     /* ========= COVER: màn đỏ tách đôi + seal 囍 ========= */
-	#cover{ background: transparent; }
-    #cover{position:fixed;inset:0;z-index:70;pointer-events:auto;}
-    #cover .side{position:absolute;top:0;bottom:0;width:50%;background:#7e1f24;}
-    #cover .left{left:0; transform:translateX(0); transition:transform 1.3s cubic-bezier(.19,1,.22,1);}
-    #cover .right{right:0; transform:translateX(0); transition:transform 1.3s cubic-bezier(.19,1,.22,1);}
-    /* chiều sâu cạnh trong */
-    #cover .left::after,#cover .right::after{content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none;}
-    #cover .left::after{ right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
-    #cover .right::after{ left:-1px; background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
+	:root{
+	  --door-ms: 1.3s; /* thời gian trượt của 2 cánh */
+	  --seal-ms: 4s;   /* thời gian seal chạy (chậm hơn) */
+	}
 
-    /* Seal 囍 chính giữa */
-    #cover .seal{
-      position:absolute; left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:128px; height:128px; border-radius:999px;
-      background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
-      box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
-      display:grid; place-items:center;
-      will-change: transform;
-      transition: transform 4s cubic-bezier(.19,1,.22,1), opacity .8s ease 1.7s;
-      z-index:71;
-    }
-    #cover .seal .xi{
-      font-family:'Noto Serif SC', serif;font-weight:900;font-size:84px;
-      background:linear-gradient(#f6d9a5,#c99f5f);-webkit-background-clip:text;background-clip:text;color:transparent;
-      filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
-    }
+	#cover{
+	  position:fixed; inset:0; z-index:70; pointer-events:auto;
+	  background: transparent; /* để thấy nội dung sau khi màn bắt đầu tách */
+	}
 
-    /* Khi mở: hai cánh trượt ra; seal đi theo 1 bên rồi mờ */
-    #cover.opened .left{ transform:translateX(-100%); }
-    #cover.opened .right{ transform:translateX(100%); }
-    #cover.opened .seal{ transform:translate(120%,-50%) rotate(6deg); opacity:0; }
-	#cover.opened{ opacity: 0; transition: opacity .4s ease .9s; }
+	/* Hai cánh màn */
+	#cover .side{
+	  position:absolute; top:0; bottom:0; width:50%; background:#7e1f24;
+	}
+	#cover .left{ left:0;  transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
+	#cover .right{ right:0; transform:translateX(0); transition:transform var(--door-ms) cubic-bezier(.19,1,.22,1); }
 
-    /* Gợi ý chạm */
-    #cover .hint{
-      position:absolute; left:50%; bottom:calc(18px + var(--sab));
-      transform:translateX(-50%); color:#fff; background:rgba(0,0,0,.2);
-      padding:.5rem .85rem; border-radius:12px; font-size:.9rem; letter-spacing:.06em; opacity:.95;
-      transition: opacity .3s ease;
-    }
-    #cover.opened .hint{ opacity:0; }
+	/* Bóng cạnh trong để có chiều sâu */
+	#cover .left::after,
+	#cover .right::after{
+	  content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none;
+	}
+	#cover .left::after{  right:-1px; background:linear-gradient(90deg, rgba(0,0,0,.18), transparent); }
+	#cover .right::after{ left:-1px;  background:linear-gradient(270deg, rgba(0,0,0,.18), transparent); }
+
+	/* Seal 囍 chính giữa */
+	#cover .seal{
+	  position:absolute; left:50%; top:50%;
+	  transform:translate(-50%,-50%);
+	  width:128px; height:128px; border-radius:999px;
+	  background: radial-gradient(55% 55% at 30% 30%, #cc8b5a, #8a5630 70%);
+	  box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
+	  display:grid; place-items:center;
+	  will-change: transform, opacity;
+	  transition:
+		transform var(--seal-ms) cubic-bezier(.19,1,.22,1),
+		opacity .8s ease calc(var(--seal-ms) - .6s);
+	  z-index:71;
+	}
+	#cover .seal .xi{
+	  font-family:'Noto Serif SC', serif; font-weight:900; font-size:84px;
+	  background:linear-gradient(#f6d9a5,#c99f5f);
+	  -webkit-background-clip:text; background-clip:text; color:transparent;
+	  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); user-select:none;
+	}
+
+	/* Khi mở: hai cánh trượt ra; seal đi theo 1 bên rồi mờ */
+	#cover.opened .left{  transform:translateX(-100%); }
+	#cover.opened .right{ transform:translateX(100%);  }
+	/* seal sang PHẢI, nghiêng nhẹ, sau đó mờ */
+	#cover.opened .seal{ transform:translate(120%, -50%) rotate(6deg); opacity:0; }
+
+	/* Gợi ý chạm */
+	#cover .hint{
+	  position:absolute; left:50%; bottom:calc(18px + var(--sab));
+	  transform:translateX(-50%);
+	  color:#fff; background:rgba(0,0,0,.2);
+	  padding:.5rem .85rem; border-radius:12px; font-size:.9rem; letter-spacing:.06em; opacity:.95;
+	  transition: opacity .3s ease;
+	}
+	#cover.opened .hint{ opacity:0; }
+
+	
+	
 
     /* ===== Bottom Action Bar (nếu bạn đang dùng) ===== */
     #actionbar{position:fixed;left:0;right:0;bottom:0;z-index:50;
@@ -345,23 +367,32 @@
     audio.addEventListener('error',()=>{ try{ if(audio.currentSrc.indexOf('pixabay.com')===-1){ audio.src=FALLBACK_MUSIC; audio.play().catch(()=>{}); } }catch(e){} });
 
     // COVER open on tap (no auto open)
-    const cover=document.getElementById('cover');
-	const openCover=()=>{
-	  if(cover.classList.contains('opened')) return;
+    const cover = document.getElementById('cover');
+	const seal  = document.querySelector('#cover .seal');
+
+	const openCover = () => {
+	  if (!cover || cover.classList.contains('opened')) return;
 	  cover.classList.add('opened');
 
-	  // chặn cover bắt sự kiện ngay lập tức để không che cảm giác UI
+	  // Cho người dùng chạm vào nội dung phía sau ngay lập tức
 	  cover.style.pointerEvents = 'none';
 
-	  // phát nhạc nếu được
-	  audio.play().catch(()=>{});
-
-	  // sau khi cánh trượt xong: loại cover hẳn khỏi DOM
-	  setTimeout(()=>{ 
-		try { cover.remove(); } catch { cover.style.display='none'; }
-	  }, 1400);
+	  // Khi seal kết thúc chuyển động transform (sau --seal-ms),
+	  // mới fade-out rồi remove cover để không cắt ngang animation
+	  const onEnd = (e) => {
+		if (e.propertyName !== 'transform') return;
+		cover.style.opacity = '0';
+		setTimeout(() => {
+		  try { cover.remove(); } catch { cover.style.display = 'none'; }
+		}, 400);
+		seal.removeEventListener('transitionend', onEnd);
+	  };
+	  if (seal) seal.addEventListener('transitionend', onEnd);
 	};
-	cover.addEventListener('click', openCover, { passive:true });
+
+	// Chỉ mở khi CHẠM
+	if (cover) cover.addEventListener('click', openCover, { passive: true });
+
 
   </script>
 
