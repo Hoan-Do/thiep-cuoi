@@ -422,12 +422,11 @@
 
 	const openCover = () => {
 	  if (!cover || cover.classList.contains('opened')) return;
-
+	  cover.classList.add('opened');
+	  cover.style.pointerEvents = 'none';        // cho phép tương tác nội dung ngay
+	  
 	  // >>> phát nhạc NGAY trong thao tác chạm
 	  autoPlayOnce();
-
-	  cover.classList.add('opened');
-	  cover.style.pointerEvents = 'none';
 
 	  const onEnd = (e) => {
 		if (e.propertyName !== 'transform') return;
