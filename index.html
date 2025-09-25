@@ -43,8 +43,10 @@
     .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
     .reveal.show{opacity:1;transform:none}
 
-    /* Hiển thị nội dung ngay sau cover để thấy dần khi tách */
-    #app {
+    /* đảm bảo nội dung luôn nổi và hiển thị */
+	#app{
+	  position: relative;
+	  z-index: 1;
 	  opacity: 1 !important;
 	  filter: none !important;
 	  transform: none !important;
@@ -52,6 +54,7 @@
 	}
 
     /* ========= COVER: màn đỏ tách đôi + seal 囍 ========= */
+	#cover{ background: transparent; }
     #cover{position:fixed;inset:0;z-index:70;pointer-events:auto;}
     #cover .side{position:absolute;top:0;bottom:0;width:50%;background:#7e1f24;}
     #cover .left{left:0; transform:translateX(0); transition:transform 1.3s cubic-bezier(.19,1,.22,1);}
@@ -70,7 +73,7 @@
       box-shadow: inset 0 8px 18px rgba(255,255,255,.24), inset 0 -8px 18px rgba(0,0,0,.28), 0 12px 26px rgba(0,0,0,.45);
       display:grid; place-items:center;
       will-change: transform;
-      transition: transform 1.1s cubic-bezier(.19,1,.22,1), opacity .5s ease 1s;
+      transition: transform 3s cubic-bezier(.19,1,.22,1), opacity .8s ease 1.7s;
       z-index:71;
     }
     #cover .seal .xi{
@@ -83,6 +86,7 @@
     #cover.opened .left{ transform:translateX(-100%); }
     #cover.opened .right{ transform:translateX(100%); }
     #cover.opened .seal{ transform:translate(120%,-50%) rotate(6deg); opacity:0; }
+	#cover.opened{ opacity: 0; transition: opacity .4s ease .9s; }
 
     /* Gợi ý chạm */
     #cover .hint{
@@ -342,14 +346,23 @@
 
     // COVER open on tap (no auto open)
     const cover=document.getElementById('cover');
-    const openCover=()=>{
-      if(cover.classList.contains('opened')) return;
-      cover.classList.add('opened');
-      audio.play().catch(()=>{});
-      // sau ~1.4s khi cánh trượt xong thì bỏ cover
-      setTimeout(()=>{ cover.style.display='none'; }, 1400);
-    };
-    cover.addEventListener('click', openCover, { passive:true });
+	const openCover=()=>{
+	  if(cover.classList.contains('opened')) return;
+	  cover.classList.add('opened');
+
+	  // chặn cover bắt sự kiện ngay lập tức để không che cảm giác UI
+	  cover.style.pointerEvents = 'none';
+
+	  // phát nhạc nếu được
+	  audio.play().catch(()=>{});
+
+	  // sau khi cánh trượt xong: loại cover hẳn khỏi DOM
+	  setTimeout(()=>{ 
+		try { cover.remove(); } catch { cover.style.display='none'; }
+	  }, 1400);
+	};
+	cover.addEventListener('click', openCover, { passive:true });
+
   </script>
 
   <!-- ========= SCRIPT 2: App content (Firestore + countdown + gallery lightbox + bottom bar active) ========= -->
