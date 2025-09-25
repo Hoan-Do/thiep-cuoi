@@ -364,6 +364,8 @@
     const FALLBACK_MUSIC="https://cdn.pixabay.com/download/audio/2022/04/05/audio_987b1b0d2d.mp3?filename=romantic-ambient-112996.mp3";
     const audio=document.getElementById('bgm');
     const musicParam=params.get('music');
+	const cover = document.getElementById('cover');
+	const doorR  = document.querySelector('#cover .doorR, #cover .right'); // tuỳ bạn dùng class nào
     audio.src=musicParam?decodeURIComponent(musicParam):DEFAULT_MUSIC;
     const icoOn=document.getElementById('icon-sound-on'); const icoOff=document.getElementById('icon-sound-off');
     function setMuted(m){ audio.muted=m; (m?icoOn.classList.add('hidden'):icoOn.classList.remove('hidden')); (m?icoOff.classList.remove('hidden'):icoOff.classList.add('hidden')); try{localStorage.setItem('wedding-muted',m?'1':'0')}catch{} }
@@ -375,12 +377,6 @@
 	// Cập nhật --vh như bạn đã có
 	function setVH(){ const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', vh + 'px'); }
 	setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
-
-	const cover = document.getElementById('cover');
-	const doorR  = document.querySelector('#cover .doorR, #cover .right'); // tuỳ bạn dùng class nào
-	const audio  = document.getElementById('bgm');
-	const icoOn  = document.getElementById('icon-sound-on');
-	const icoOff = document.getElementById('icon-sound-off');
 
 	function setMuted(m){
 	  if(!audio) return;
