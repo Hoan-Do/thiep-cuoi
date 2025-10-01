@@ -48,7 +48,7 @@
     #app{ position: relative; z-index: 1; opacity: 1 !important; filter: none !important; transform: none !important; display: block !important; }
 
     /* ========= COVER: màn đỏ tách đôi + seal 囍 ========= */
-    :root{ --door-ms: 3s; }  /* chỉnh tốc độ mở tại đây */
+    :root{ --door-ms: 6s; }  /* chỉnh tốc độ mở tại đây */
 
 	#cover{
 	  position:fixed; inset:0; z-index:70; pointer-events:auto; background:transparent;
@@ -137,6 +137,23 @@
     @media (prefers-reduced-motion: reduce){
       #cover .doorL, #cover .doorR{ transition:none !important; }
     }
+
+
+    /* Timeline slide-in */
+    .timeline-item{
+      opacity: 0;
+      transform: translateX(var(--tx,0));
+      transition: transform 8s cubic-bezier(.19,1,.22,1), opacity 8s ease;
+      will-change: transform, opacity;
+    }
+    .timeline-item.from-left { --tx: -40px; }
+    .timeline-item.from-right{ --tx:  40px; }
+    .timeline-item.show      { opacity: 1; transform: translateX(0); }
+
+    @media (prefers-reduced-motion: reduce){
+      .timeline-item{ transition: none !important; transform: none !important; opacity: 1 !important; }
+    }
+
   </style>
 </head>
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
@@ -194,8 +211,8 @@
         <div class="absolute inset-0 bg-hero bg-cover bg-center will-change-transform" id="hero-bg"></div>
         <div class="absolute inset-0 bg-coffee-900/60"></div>
         <div class="relative z-10 text-center px-5 py-20">
-          <p class="font-script text-3xl text-white/95 reveal">Thiệp Mời</p>
-          <h1 class="font-display tracking-widest text-white text-4xl sm:text-6xl mt-2 reveal">VĂN HOÀN</h1>
+          <p class="font-script text-3xl text-white/95 reveal">Thiệp Mời Cưới</p>
+          <h1 class="font-display tracking-widest text-white text-4xl sm:text-6xl mt-2 reveal">ĐỖ HOÀN</h1>
           <p class="text-4xl font-script text-rosey -mt-2 reveal">&</p>
           <h2 class="font-display tracking-widest text-white text-3xl sm:text-5xl reveal">NGỌC HUYỀN</h2>
           <p id="guest-line" class="mt-4 text-white/95 reveal">Trân trọng kính mời <span id="guest-name-display" class="font-semibold"></span></p>
@@ -210,13 +227,13 @@
     <!-- ===== WRAPPER ===== -->
     <main class="max-w-6xl mx-auto px-3 pb-6 space-y-6 mt-4">
 
-      <!-- Lịch trình -->
+            <!-- Lịch trình -->
       <section id="timeline" class="scroll-mt-24">
         <div class="section-card p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Lịch trình ngày cưới</h3>
           <div class="mt-5 space-y-4">
 
-            <article class="p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
+            <article class="timeline-item from-left p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
               <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 5h16v2H4zM4 9h16v10H4zM7 12h3v4H7zM12 12h3v4h-3zM16 12h3v4h-3z"/></svg>
               </div>
@@ -228,7 +245,41 @@
               </div>
             </article>
 
-            <article class="p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
+            <article class="timeline-item from-right p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
+              <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h3V2zM2 10h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10zm4 4h5v5H6v-5z"/></svg>
+              </div>
+              <div>
+                <p class="uppercase tracking-widest text-coffee-600 text-xs">Lễ Thành Hôn</p>
+                <p class="font-serif text-xl font-bold text-coffee-800">15:30 pm — 26/10/2025</p>
+                <p class="text-coffee-800/90">Tại tư gia nhà trai (Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh)</p>
+                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Lịch trình -->
+      <section id="timeline" class="scroll-mt-24">
+        <div class="section-card p-5 sm:p-6 reveal">
+          <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Lịch trình ngày cưới</h3>
+          <div class="mt-5 space-y-4">
+
+            <article class="timeline-item from-left p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
+              <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 5h16v2H4zM4 9h16v10H4zM7 12h3v4H7zM12 12h3v4h-3zM16 12h3v4h-3z"/></svg>
+              </div>
+              <div>
+                <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
+                <p class="font-serif text-xl font-bold text-coffee-800">09:00 am — 26/10/2025</p>
+                <p class="text-coffee-800/90">Tại tư gia nhà trai (Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh)</p>
+                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
+              </div>
+            </article>
+
+            <article class="timeline-item from-right p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
               <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h3V2zM2 10h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10zm4 4h5v5H6v-5z"/></svg>
               </div>
@@ -270,6 +321,15 @@
             <img src="image/Anh_album_6_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_6_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 6">
             <img src="image/Anh_album_7_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_7_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 7">
             <img src="image/Anh_album_8_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_8_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 8">
+            <img src="image/Anh_album_9_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_9_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 9">
+            <img src="image/Anh_album_10_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_10_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 10">
+            <img src="image/Anh_album_11_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_11_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 11">
+            <img src="image/Anh_album_12_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_12_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 12">
+            <img src="image/Anh_album_13_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_13_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 13">
+            <img src="image/Anh_album_14_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_14_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 14">
+            <img src="image/Anh_album_15_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_15_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 15">
+            <img src="image/Anh_album_16_rz.jpg" loading="lazy" decoding="async" data-full="image/Anh_album_16_rz.jpg" class="rounded-xl shadow-frame object-cover w-full h-70 sm:h-56 md:h-72 cursor-zoom-in" alt="Ảnh cưới 16">   
+                                
           </div>
         </div>
       </section>
@@ -616,6 +676,24 @@
         if (!('IntersectionObserver' in window)) {
           document.querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
         }
+
+        // Slide-in cho timeline khi vào viewport
+        const tlItems = document.querySelectorAll('#timeline .timeline-item');
+        if (tlItems.length) {
+          const slideObs = new IntersectionObserver((entries) => {
+            entries.forEach((ent) => {
+              if (ent.isIntersecting) {
+                ent.target.classList.add('show');
+                slideObs.unobserve(ent.target);
+              }
+            });
+          }, { threshold: 0.25, rootMargin: "0px 0px -10% 0px" });
+          tlItems.forEach(el => slideObs.observe(el));
+        } else {
+          // fallback nếu trình duyệt cũ
+          document.querySelectorAll('#timeline .timeline-item').forEach(el => el.classList.add('show'));
+        }
+
 
       } catch (err) {
         console.warn('[App init warning]', err);
