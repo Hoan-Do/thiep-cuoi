@@ -237,10 +237,16 @@
               <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 5h16v2H4zM4 9h16v10H4zM7 12h3v4H7zM12 12h3v4h-3zM16 12h3v4h-3z"/></svg>
               </div>
-              <div>
+              <div id="dynamic-section1_cr">
                 <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
                 <p class="font-serif text-xl font-bold text-coffee-800">09:00 am — 26/10/2025</p>
                 <p class="text-coffee-800/90">Tại tư gia nhà trai (Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh)</p>
+                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
+              </div>
+              <div id="dynamic-section1_cd">
+                <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
+                <p class="font-serif text-xl font-bold text-coffee-800">09:00 am — 26/10/2025</p>
+                <p class="text-coffee-800/90">Tại tư gia nhà gái (Đc: TDP Đồng Ích, phường Tự Lạn, tỉnh Bắc Ninh)</p>
                 <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
               </div>
             </article>
@@ -249,10 +255,16 @@
               <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h3V2zM2 10h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10zm4 4h5v5H6v-5z"/></svg>
               </div>
-              <div>
+              <div id="dynamic-section2_cr">
                 <p class="uppercase tracking-widest text-coffee-600 text-xs">Lễ Thành Hôn</p>
                 <p class="font-serif text-xl font-bold text-coffee-800">15:30 pm — 26/10/2025</p>
                 <p class="text-coffee-800/90">Tại tư gia nhà trai (Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh)</p>
+                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
+              </div>
+              <div id="dynamic-section2_cd">
+                <p class="uppercase tracking-widest text-coffee-600 text-xs">LỄ VU QUY</p>
+                <p class="font-serif text-xl font-bold text-coffee-800">13:30 pm — 26/10/2025</p>
+                <p class="text-coffee-800/90">Tại tư gia nhà gái (Đc: TDP Đồng Ích, phường Tự Lạn, tỉnh Bắc Ninh)</p>
                 <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
               </div>
             </article>
@@ -337,7 +349,12 @@
 
       <!-- QR -->
       <section id="qr" class="scroll-mt-24">
-        <div class="section-card p-5 sm:p-6 reveal">
+        <div id="qr_cd" class="section-card p-5 sm:p-6 reveal">
+          <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Mừng cưới cô dâu</h3>
+            <img class="mx-auto block my-3 sm:my-4 w-50 h-70" alt="" loading="lazy" decoding="async"   
+              src="image\QRTKNgocHuyen.jpg" />            
+        </div>
+        <div id="qr_cr" class="section-card p-5 sm:p-6 reveal">
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Mừng cưới chú rể</h3>
             <img class="mx-auto block my-3 sm:my-4 w-50 h-70" alt="" loading="lazy" decoding="async"   
               src="image\QRTKVanHoan.jpg" />            
@@ -478,8 +495,20 @@
         // Guest in hero
         const p = new URLSearchParams(location.search);
         const nameTo = p.get("to");
+        const nameFrom = p.get("from");
         if (nameTo) { const el=document.getElementById('guest-name-display'); if(el) el.textContent=decodeURIComponent(nameTo); }
         else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
+        if(nameFrom === 'cr') {
+          const els1 = document.getElementById("dynamic-section1_cd"); 
+          const els2 = document.getElementById("dynamic-section2_cd");
+          if(els1) els1.style.display = 'none';
+          if(els2) els2.style.display = 'none';
+          document.getElementById("qr_cd").style.display = 'none';
+        }else if (nameFrom === 'cd'){
+          document.getElementById("dynamic-section1_cr").style.display = 'none';
+          document.getElementById("dynamic-section2_cr").style.display = 'none';
+          document.getElementById("qr_cr").style.display = 'none';
+        }
 
         // Submit guestbook
         window.submitGuestbook = async () => {
