@@ -227,49 +227,356 @@
     <!-- ===== WRAPPER ===== -->
     <main class="max-w-6xl mx-auto px-3 pb-6 space-y-6 mt-4">
 
-      <!-- Lịch trình -->
+     <!-- Lịch trình -->
       <section id="timeline" class="scroll-mt-24">
         <div class="section-card p-5 sm:p-6 reveal">
+
+
+          <!-- ==== INVITATION INFO BLOCK ==== -->
+          <section class="invite-wrap">
+            <div class="invite-card">
+              <!-- Lời mời -->
+              <p class="invite-heading">TRÂN TRỌNG KÍNH MỜI</p>
+               <p id="invite-to" class="invite-heading"></p>
+              <p class="invite-desc">
+                TỚI THAM DỰ BUỔI TIỆC CƯỚI<br/>
+                CÙNG GIA ĐÌNH CHÚNG TÔI VÀO LÚC
+              </p>
+
+              <!-- Thời gian -->
+              <p class="invite-time">09 GIỜ 00 CHỦ NHẬT<br/>NGÀY 26 THÁNG 10 NĂM 2025</p>
+
+              <!-- Địa điểm -->
+              <p class="invite-place">TẠI TƯ GIA NHÀ TRAI</p>
+              <p class="invite-address">
+                TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh
+              </p>
+              <a class="invite-map" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7" target="_blank">📍 Xem địa chỉ</a>
+
+              <!-- Ghi chú -->
+              <p class="invite-note">
+                Sự hiện diện của quý khách<br/>
+                là niềm vinh hạnh cho gia đình chúng tôi
+              </p>
+
+              <!-- Hai cột -->
+              <div class="invite-families">
+                <div>
+                  <p class="invite-col-title">NHÀ TRAI</p>
+                  <p>ĐỖ VĂN THẬN<br/>NGUYỄN THỊ CHỨC</p>
+                </div>
+                <div>
+                  <p class="invite-col-title">NHÀ GÁI</p>
+                  <p>NGUYỄN ĐÌNH VÕ<br/>LÊ THỊ LƯƠNG</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <style>
+          .invite-wrap{display:flex;justify-content:center;padding:20px;}
+          .invite-card{
+            max-width:700px;width:100%;
+            background:#f9f9f9; /* placeholder, tuỳ chỉnh */
+            border-radius:12px; padding:20px; text-align:center;
+          }
+          .invite-heading{font-weight:bold;margin:0 0 10px;}
+          .invite-desc{margin:0 0 16px;}
+          .invite-time{font-weight:bold;margin:0 0 18px;}
+          .invite-place{font-weight:bold;margin:0;}
+          .invite-address{margin:6px 0 8px;}
+          .invite-map{display:inline-block;margin-bottom:18px;text-decoration:none;}
+          .invite-note{margin:0 0 18px;}
+          .invite-families{display:flex;justify-content:space-between;gap:20px;}
+          .invite-families > div{flex:1;}
+          .invite-col-title{font-weight:bold;margin-bottom:4px;}
+          </style>
+          <!-- ==== /INVITATION INFO BLOCK ==== -->
+
+
+
+
           <h3 class="font-serif text-2xl font-bold text-coffee-700 text-center">Lịch trình ngày cưới</h3>
-          <div class="mt-5 space-y-4">
 
-            <article class="timeline-item from-left p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
-              <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 5h16v2H4zM4 9h16v10H4zM7 12h3v4H7zM12 12h3v4h-3zM16 12h3v4h-3z"/></svg>
-              </div>
-              <div id="dynamic-section1_cr">
-                <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
-                <p class="font-serif text-xl font-bold text-coffee-800">09:00 am — 26/10/2025</p>
-                <p class="text-coffee-800/90">Tại tư gia nhà trai (Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh)</p>
-                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
-              </div>
-              <div id="dynamic-section1_cd">
-                <p class="uppercase tracking-widest text-coffee-600 text-xs">Tiệc Cưới</p>
-                <p class="font-serif text-xl font-bold text-coffee-800">09:00 am — 26/10/2025</p>
-                <p class="text-coffee-800/90">Tại tư gia nhà gái (Đc: TDP Đồng Ích, phường Tự Lạn, tỉnh Bắc Ninh)</p>
-                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
-              </div>
-            </article>
 
-            <article class="timeline-item from-right p-4 rounded-lg border border-coffee-200 bg-white/90 flex items-start gap-3">
-              <div class="shrink-0 w-10 h-10 rounded-full bg-coffee-600 text-white grid place-items-center">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h3V2zM2 10h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10zm4 4h5v5H6v-5z"/></svg>
-              </div>
-              <div id="dynamic-section2_cr">
-                <p class="uppercase tracking-widest text-coffee-600 text-xs">Lễ Thành Hôn</p>
-                <p class="font-serif text-xl font-bold text-coffee-800">15:30 pm — 26/10/2025</p>
-                <p class="text-coffee-800/90">Tại tư gia nhà trai (Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh)</p>
-                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
-              </div>
-              <div id="dynamic-section2_cd">
-                <p class="uppercase tracking-widest text-coffee-600 text-xs">LỄ VU QUY</p>
-                <p class="font-serif text-xl font-bold text-coffee-800">13:30 pm — 26/10/2025</p>
-                <p class="text-coffee-800/90">Tại tư gia nhà gái (Đc: TDP Đồng Ích, phường Tự Lạn, tỉnh Bắc Ninh)</p>
-                <a class="inline-block mt-1 text-rosey font-semibold hover:underline" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7">Xem bản đồ</a>
-              </div>
-            </article>
 
-          </div>
+
+          <div class="timelinedown">
+
+            <div class="container left-container">
+                <img src="../portfollio/img/linkedin.png" alt="">
+                <div
+                    class="textbox">
+                    <h2>Company tag</h2>
+                    <small class>2000-2000</small>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Beatae
+                        eaque asperiores tempore corrupti vitae voluptatem
+                        consequuntur
+                        repudiandae nisi veniam debitis.
+                    </p>
+                    <span class="left-container-arrow"></span>
+                </div>
+            </div>
+            <div class="container right-container">
+                <img src="../portfollio/img/linkedin.png" alt="">
+                <div
+                    class="textbox">
+                    <h2>Company tag</h2>
+                    <small class>2000-2000</small>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Beatae
+                        eaque asperiores tempore corrupti vitae voluptatem
+                        consequuntur
+                        repudiandae nisi veniam debitis.
+                    </p>
+                    <span class="right-container-arrow"></span>
+                </div>
+            </div>
+            <div class="container left-container">
+                <img src="../portfollio/img/linkedin.png" alt="">
+                <div
+                    class="textbox">
+                    <h2>Company tag</h2>
+                    <small class>2000-2000</small>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Beatae
+                        eaque asperiores tempore corrupti vitae voluptatem
+                        consequuntur
+                        repudiandae nisi veniam debitis.
+                    </p>
+                    <span class="left-container-arrow"></span>
+                </div>
+            </div>
+            <div class="container right-container">
+                <img src="../portfollio/img/linkedin.png" alt="">
+                <div
+                    class="textbox">
+                    <h2>Company tag</h2>
+                    <small class>2000-2000</small>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Beatae
+                        eaque asperiores tempore corrupti vitae voluptatem
+                        consequuntur
+                        repudiandae nisi veniam debitis.
+                    </p>
+                    <span class="right-container-arrow"></span>
+                </div>
+            </div>
+            <div class="container left-container">
+                <img src="../portfollio/img/linkedin.png" alt="">
+                <div
+                    class="textbox">
+                    <h2>Company tag</h2>
+                    <small class>2000-2000</small>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Beatae
+                        eaque asperiores tempore corrupti vitae voluptatem
+                        consequuntur
+                        repudiandae nisi veniam debitis.
+                    </p>
+                    <span class="left-container-arrow"></span>
+                </div>
+            </div>
+            <div class="container right-container">
+                <img src="../portfollio/img/linkedin.png" alt="">
+                <div
+                    class="textbox">
+                    <h2>Company tag</h2>
+                    <small class>2000-2000</small>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Beatae
+                        eaque asperiores tempore corrupti vitae voluptatem
+                        consequuntur
+                        repudiandae nisi veniam debitis.
+                    </p>
+                    <span class="right-container-arrow"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <style>
+        .timelinedown {
+          position: relative;
+          max-width: 800px;
+          margin: 40px auto;
+          padding: 0 10px;
+        }
+
+        /* đường kẻ dọc giữa */
+        .timelinedown::after {
+          content: '';
+          position: absolute;
+          width: 2px;
+          height: 100%;
+          background: #e6d5c3; /* line màu nâu nhạt */
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: -1;
+          animation: moveline 6s linear forwards;
+        }
+
+        /* container chung */
+        .timelinedown .container {
+          padding: 10px 40px;
+          position: relative;
+          width: 50%;
+          opacity: 0;
+          animation: movedown 1s linear forwards;
+        }
+
+        @keyframes movedown {
+          0% { opacity: 0; transform: translateY(-30px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes moveline {
+          0% { height: 0; }
+          100% { height: 100%; }
+        }
+
+        /* delay để item xuống lần lượt */
+        .timelinedown .container:nth-child(2){ animation-delay: 1s; }
+        .timelinedown .container:nth-child(3){ animation-delay: 2s; }
+        .timelinedown .container:nth-child(4){ animation-delay: 3s; }
+        .timelinedown .container:nth-child(5){ animation-delay: 4s; }
+        .timelinedown .container:nth-child(6){ animation-delay: 5s; }
+
+        /* card nội dung */
+        .timelinedown .textbox {
+          padding: 16px 20px;
+          background-color: #fff;
+          border: 1px solid #e6d5c3;
+          border-radius: 12px;
+          font-size: 15px;
+          box-shadow: 0 4px 12px rgba(0,0,0,.06);
+          position: relative;
+        }
+
+        .timelinedown .textbox h2 {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 4px;
+          color: #5b3b22;
+        }
+        .timelinedown .textbox small {
+          display: block;
+          margin-bottom: 10px;
+          font-size: 13px;
+          color: #7a6e69;
+        }
+        .timelinedown .textbox p {
+          font-size: 14px;
+          color: #5b3b22;
+          line-height: 1.5;
+        }
+
+        /* cột trái / phải */
+        .timelinedown .left-container { left: 0; }
+        .timelinedown .right-container { left: 50%; }
+
+        /* icon tròn */
+        .timelinedown .container img {
+          position: absolute;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 2px solid #e6d5c3;
+          background: #fff;
+          top: 24px;
+          z-index: 10;
+        }
+        .timelinedown .left-container img { right: -16px; }
+        .timelinedown .right-container img { left: -16px; }
+
+        /* mũi tên */
+        .timelinedown .left-container-arrow {
+          position: absolute;
+          top: 28px; right: -15px;
+          border-top: 12px solid transparent;
+          border-bottom: 12px solid transparent;
+          border-left: 12px solid #fff;
+        }
+        .timelinedown .right-container-arrow {
+          position: absolute;
+          top: 28px; left: -15px;
+          border-top: 12px solid transparent;
+          border-bottom: 12px solid transparent;
+          border-right: 12px solid #fff;
+        }
+
+        /* Responsive: về 1 cột */
+        @media screen and (max-width: 700px) {
+          .timelinedown::after { left: 24px; }
+          .timelinedown .container {
+            width: 100%;
+            padding-left: 60px;
+            padding-right: 20px;
+          }
+          .timelinedown .right-container { left: 0; }
+          .timelinedown .container img { left: 8px; right: auto; }
+          .timelinedown .left-container-arrow,
+          .timelinedown .right-container-arrow {
+            left: -12px;
+            border-right: 12px solid #fff;
+            border-left: 0;
+          }
+        }<style>
+.timelinedown {
+  position: relative;      /* quan trọng để line bám */
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 10px;
+}
+
+/* đường kẻ dọc giữa */
+.timelinedown::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;               /* thay vì height:100% → line chạy full theo chiều cao */
+  left: 50%;
+  width: 2px;
+  background: #e6d5c3;
+  transform: translateX(-50%);
+  animation: moveline 6s linear forwards;
+  z-index: 0;              /* đẩy xuống dưới box */
+}
+
+@keyframes moveline {
+  from { height: 0; }
+  to   { height: 100%; }
+}
+
+/* container chung */
+.timelinedown .container {
+  position: relative;
+  width: 50%;
+  padding: 10px 40px;
+  opacity: 0;
+  animation: movedown 1s linear forwards;
+}
+
+@keyframes movedown {
+  0% { opacity:0; transform:translateY(-30px); }
+  100%{ opacity:1; transform:translateY(0); }
+}
+
+/* ...phần .textbox, img, arrow, responsive giữ như mình gửi ở trên */
+</style>
+
+
+
+
+
         </div>
       </section>
 
@@ -497,6 +804,8 @@
         const nameTo = p.get("to");
         const nameFrom = p.get("from");
         if (nameTo) { const el=document.getElementById('guest-name-display'); if(el) el.textContent=decodeURIComponent(nameTo); }
+        else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
+        if (nameTo) { const el=document.getElementById('invite-to'); if(el) el.textContent=decodeURIComponent(nameTo); }
         else { const l=document.getElementById('guest-line'); if(l) l.classList.add('hidden'); }
         if(nameFrom === 'cr') {
           const els1 = document.getElementById("dynamic-section1_cd"); 
