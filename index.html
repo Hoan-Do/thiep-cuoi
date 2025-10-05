@@ -156,6 +156,9 @@
 
   </style>
 </head>
+
+
+
 <body class="bg-coffee-50 bg-paperTex/30 text-coffee-900 font-sans antialiased">
 
   <!-- ========= COVER (chạm để mở) ========= -->
@@ -247,14 +250,21 @@
               <p class="invite-time">09 GIỜ 00 CHỦ NHẬT<br/>NGÀY 26 THÁNG 10 NĂM 2025</p>
 
               <!-- Địa điểm -->
-              <p class="invite-place">TẠI TƯ GIA NHÀ TRAI</p>
-              <p class="invite-address">
+               <!-- CR -->
+              <p id="flg_cr" class="invite-place">TẠI TƯ GIA NHÀ TRAI</p>
+              <p id="flg_cr1" class="invite-address">
                 TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh
               </p>
-              <a class="invite-map" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7" target="_blank">📍 Xem địa chỉ</a>
+              <a id="flg_cr2" class="invite-map" href="https://maps.app.goo.gl/L6Ke3Ge2LyZaAHzt7" target="_blank">📍 Xem địa chỉ</a>
+
+              <p id="flg_cd" class="invite-place">TẠI TƯ GIA NHÀ GÁI</p>
+              <p id="flg_cd1" class="invite-address">
+                TDP Đồng Ích, phường Tự Lạn, tỉnh Bắc Ninh
+              </p>
+              <a id="flg_cd2" class="invite-map" href="https://maps.app.goo.gl/uJYKeR4VRoUv7Lda8" target="_blank">📍 Xem địa chỉ</a>
 
               <!-- Ghi chú -->
-              <p class="invite-note">
+              <p id="invite-note" class="invite-note">
                 Sự hiện diện của quý khách<br/>
                 là niềm vinh hạnh cho gia đình chúng tôi
               </p>
@@ -311,14 +321,17 @@
           </div>
           <div class="container right">
             <div class="content">
-              <h2>13 GIỜ 00</h2>
-              <p>Lễ Vu Quy (Tại nhà gái)</p>
+              <h2>13 GIỜ 30</h2>
+              <p><b>Lễ Vu Quy</b><br />
+              Đc: TDP Đồng Ích, phường Tự Lạn, tỉnh Bắc Ninh</p>
             </div>
           </div>
           <div class="container left">
             <div class="content">
               <h2>15 GIỜ 00</h2>
-              <p>Lễ Thành Hôn</p>
+              <p><b>Lễ Thành Hôn</b><br />
+                Đc: TDP Nguyễn, phường Vân Hà, tỉnh Bắc Ninh
+              </p>
             </div>
             </div>
           </div>
@@ -693,10 +706,19 @@
           if(els1) els1.style.display = 'none';
           if(els2) els2.style.display = 'none';
           document.getElementById("qr_cd").style.display = 'none';
+          document.getElementById("flg_cd").style.display = 'none';
+          document.getElementById("flg_cd1").style.display = 'none';
+          document.getElementById("flg_cd2").style.display = 'none';
         }else if (nameFrom === 'cd'){
-          document.getElementById("dynamic-section1_cr").style.display = 'none';
-          document.getElementById("dynamic-section2_cr").style.display = 'none';
+          const els1 = document.getElementById("dynamic-section1_cr"); 
+          const els2 = document.getElementById("dynamic-section2_cr");
+          if(els1) els1.style.display = 'none';
+          if(els2) els2.style.display = 'none';
           document.getElementById("qr_cr").style.display = 'none';
+          document.getElementById("flg_cr").style.display = 'none';
+          document.getElementById("flg_cr1").style.display = 'none';
+          document.getElementById("flg_cr2").style.display = 'none';
+          document.getElementById("invite-note").style.display = 'none';
         }
 
         // Submit guestbook
