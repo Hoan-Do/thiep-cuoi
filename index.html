@@ -779,8 +779,9 @@
             const li=document.createElement('li'); li.className="mb-3 p-4 rounded-xl border border-coffee-200 bg-white/80 shadow-sm";
             const when=d.createdAt?.toDate?d.createdAt.toDate().toLocaleString('vi-VN'):"";
             li.innerHTML=`<p class="font-semibold text-coffee-800">${d.name||''}</p>
-                          <p class="text-coffee-700/90 mt-1">${d.message||''}</p>
-                          <p class="text-xs text-coffee-600/70 mt-2 text-right">${when}</p>`;
+                          <p class="text-coffee-700/90 mt-1">${d.message||''}</p>`
+                          //<p class="text-xs text-coffee-600/70 mt-2 text-right">${when}</p>`
+				;
             list.appendChild(li);
           });
         });
@@ -950,4 +951,5 @@
   </script>
 </body>
 </html>
+
 
